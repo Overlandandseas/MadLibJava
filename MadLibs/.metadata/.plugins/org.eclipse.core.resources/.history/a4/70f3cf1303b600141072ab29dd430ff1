@@ -1,0 +1,13 @@
+
+public class MadLibsHandler implements Runnable {
+	public static void main (String[] args) {
+		//Usage
+		System.out.println("This class is meant to be used by a MadLibsServer object");
+		return;
+	}
+
+	@Override
+	public void run() {
+		
+	}
+}
