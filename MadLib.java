@@ -25,8 +25,8 @@ public class MadLib {
 
     for(short c = 0; c <= entered.length(); c++ ){
       if(entered.charAt(c) == '%'){
-          wordsArray.put(entered.substring(count, c-1));
-          boolArray.put(flip);
+          wordsArray.add(entered.substring(count, c-1));
+          boolArray.add(flip);
           flip = !flip;
         count = c;
       }
