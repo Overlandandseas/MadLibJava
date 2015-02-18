@@ -1,8 +1,3 @@
-/*
- * Hey Dan, wassup. Your work for the first milestone is with the client.
- * Start by looking at line 42
- */
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,20 +33,11 @@ public class MadLibsHandler implements Runnable {
 		String message;
 		int client_input = -1;
 		
-		/*
-		 * Dan, the connection with the client starts here!
-		 * Pay special attention to the order in which the server writes/reads to the client socket
-		 */
-		
 		while (client_input != 0) {
 			try {
-				//Write the game mode options to the remote socket
 				output.writeUTF("Mode:\n\t1 - Play\n\t2 - Create\n\t3 - Read\n\t0 - Disconnect");
-				
-				//Read int from client
 				client_input= input.readInt();
 				
-				//Depending on the int read, enter app mode accordingly
 				switch (client_input) {
 				case (1):
 					output.writeUTF("You are in \"Play\" mode.");
@@ -84,24 +70,21 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "play" mode
 	 */
 	private void play() {
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
+		
 	}
 	
 	/**
 	 * Begins running "create" mode
 	 */
 	private void create() {
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
+		
 	}
 	
 	/**
 	 * Begins running "read" mode
 	 */
 	private void read() {
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
+		
 	}
 	
 	

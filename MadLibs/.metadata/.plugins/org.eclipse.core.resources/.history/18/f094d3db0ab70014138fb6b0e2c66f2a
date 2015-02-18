@@ -1,8 +1,3 @@
-/*
- * Hey Dan, wassup. Your work for the first milestone is with the client.
- * Start by looking at line 42
- */
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -42,7 +37,6 @@ public class MadLibsHandler implements Runnable {
 		 * Dan, the connection with the client starts here!
 		 * Pay special attention to the order in which the server writes/reads to the client socket
 		 */
-		
 		while (client_input != 0) {
 			try {
 				//Write the game mode options to the remote socket
