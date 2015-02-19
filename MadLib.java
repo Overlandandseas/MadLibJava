@@ -19,15 +19,16 @@ public class MadLib {
 	public MadLib(String entered) {
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
-		short count = 0;
+		int count = 0;
 		Boolean flip = false;
 
-		for (short c = 0; c <= entered.length(); c++) {
+		for (int c = 0; c < entered.length(); c++) {
 			if (entered.charAt(c) == '%') {
-				wordsArray.add(entered.substring(count, c - 1));
+				wordsArray.add(entered.substring(count, c));
 				boolArray.add(flip);
 				flip = !flip;
-				count = c;
+				count = flip ? c : c + 1;
+
 			}
 
 			/*
@@ -56,9 +57,7 @@ public class MadLib {
 
 			} else {
 				temp.append(wordsArray.get(c));
-
 			}
-			temp.append(" ");
 
 		}
 		sc.close();
@@ -67,7 +66,7 @@ public class MadLib {
 
 	public static void main(String[] args) {
 		MadLib a = new MadLib(
-				"I don't think that the ^noun is the future to our ^emotion and we should probably invest more time in the ^noun before ^pronoun die.");
+				"I don't think that the %noun% is the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 
 		a.playNprint();
 	}
