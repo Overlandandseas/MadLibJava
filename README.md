@@ -3,5 +3,5 @@
 ---
 Authors Include
   * Lucas Overland
-  * George West
+  * George West (NERD)
   * Dan Love
