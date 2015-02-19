@@ -16,28 +16,29 @@ public class MadLib {
 	}
 
 	// constructor
-	public MadLib(String entered) {
+	public MadLib(String entered) throws BadMadLibDataException{
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
 		int count = 0;
 		Boolean flip = false;
 
 		for (int c = 0; c < entered.length(); c++) {
-			if (entered.charAt(c) == '%') {
+			if (entered.charAt(c) == '%' || c == entered.length()-1) {
+
+
+
 				wordsArray.add(entered.substring(count, c));
 				boolArray.add(flip);
 				flip = !flip;
-				count = flip ? c : c + 1;
 
+				if(count == c && !flip)
+					throw new BadMadLibDataException("A blank space is 0 chars long! Can't do that.");
+
+				count = flip ? c : c + 1;
 			}
 
-			/*
-			 * if(c != entered.length() && entered.charAt(c) != ' '){
-			 * wordtemp.append(entered.charAt(c)); } else {
-			 * wordsArray.add(count, wordtemp.toString()); boolArray.add(count,
-			 * wordtemp.charAt(0) == '^'); count++; wordtemp = new
-			 * StringBuilder("");
-			 */
+			if(c == entered.length()-1 && flip)
+				throw new BadMadLibDataException("You ended the sentence with a blank space! Can't do that.");
 		}
 	}
 
@@ -65,9 +66,17 @@ public class MadLib {
 	}
 
 	public static void main(String[] args) {
-		MadLib a = new MadLib(
-				"I don't think that the %noun% is the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 
-		a.playNprint();
+		try{
+		// MadLib a = new MadLib(
+		// 		"I don't think that the %noun% is the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
+
+			MadLib b = new MadLib("%DOES%%THIS%%BREAK%%ANYTHING?%");
+			b.playNprint();
+		} catch(BadMadLibDataException ex){
+			ex.printStackTrace();
+		}
+		// a.playNprint();
+
 	}
 }
