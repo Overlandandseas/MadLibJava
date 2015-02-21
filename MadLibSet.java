@@ -30,8 +30,15 @@ public class MadLibSet {
 	}
 
 	public static void main(String[] args) {
-		MadLib a = new MadLib("Why don't you love ^noun as much as I do?");
-		MadLibSet.add("First Key", a);
+		MadLib a;
+		try {
+			a = new MadLib("Why don't you love ^noun as much as I do?");
+			MadLibSet.add("First Key", a);
+		} catch (BadMadLibDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 
 	}
 

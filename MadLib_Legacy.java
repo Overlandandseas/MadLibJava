@@ -74,11 +74,17 @@ public class MadLib_Legacy {
 	}
 
 	public static void main(String[] args) {
-		MadLib a = new MadLib(
-				"I don't think that the ^noun is the future to our ^emotion and we should probably invest more time in the ^noun before ^pronoun die.");
-		// System.out.println(a.play());
-		// MadLib b = new MadLib();
-		a.playNprint();
+		MadLib a;
+		try {
+			a = new MadLib(
+					"I don't think that the ^noun is the future to our ^emotion and we should probably invest more time in the ^noun before ^pronoun die.");
+			// System.out.println(a.play());
+			// MadLib b = new MadLib();
+			a.playNprint();
+		} catch (BadMadLibDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	// HOW MUCH DO YOU LIKE {}{}{B}}}R{{A}}{C}{}K{{{E{}}T}}}S}
 }
