@@ -3,5 +3,5 @@
 ---
 Authors Include
   * Lucas Overland
-  * George West (NERD)
+  * George West (scrummaster)
   * Dan Love
