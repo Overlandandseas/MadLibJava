@@ -9,10 +9,8 @@ public class MadLib {
 	short rating;
 
 	// default constructor
-	public MadLib() {
-		System.out.println("Script Verification Failed (Error Code: 332)");
-		System.exit(1);
-		return;
+	public MadLib() throws BadMadLibDataException{
+		throw new BadMadLibDataException("You must pass a string to create a new MadLib. The default constructor should never be called.");
 	}
 
 	// constructor
@@ -25,20 +23,20 @@ public class MadLib {
 		for (int c = 0; c < entered.length(); c++) {
 			if (entered.charAt(c) == '%' || c == entered.length()-1) {
 
-
-
 				wordsArray.add(entered.substring(count, c));
 				boolArray.add(flip);
-				flip = !flip;
+				if(entered.charAt(c) == '%')
+					flip = !flip;
 
 				if(count == c && !flip)
 					throw new BadMadLibDataException("A blank space is 0 chars long! Can't do that.");
-
 				count = flip ? c : c + 1;
 			}
-
-			if(c == entered.length()-1 && flip)
-				throw new BadMadLibDataException("You ended the sentence with a blank space! Can't do that.");
+			System.out.println("c:      " + c);
+			System.out.println("length: " + entered.length());
+			System.out.println("flip:   " + flip);
+			if(count == entered.length()-1 && flip)
+				throw new BadMadLibDataException("You are missing a % somewhwere.");
 		}
 	}
 
@@ -68,11 +66,10 @@ public class MadLib {
 	public static void main(String[] args) {
 
 		try{
-		// MadLib a = new MadLib(
-		// 		"I don't think that the %noun% is the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
+		MadLib a = new MadLib("I don't think that the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 
-			MadLib b = new MadLib("%DOES%%THIS%%BREAK%%ANYTHING?%");
-			b.playNprint();
+			//  MadLib b = new MadLib("%DOES%%THIS%%BREAK%%ANYTHING?%");
+			a.playNprint();
 		} catch(BadMadLibDataException ex){
 			ex.printStackTrace();
 		}
