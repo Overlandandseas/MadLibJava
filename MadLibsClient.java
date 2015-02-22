@@ -23,6 +23,10 @@ public class MadLibsClient {
 		}
 	}
 
+	/**
+	 * Main method. Pass args according to usage to begin running a new MadLibsClient
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		// Make sure args are passed
 		if (!(args.length >= 2)) {
@@ -42,10 +46,17 @@ public class MadLibsClient {
 		// Create new MadLibClient
 		MadLibsClient client = new MadLibsClient(hostName, portNumber);
 		
+		// Declare variables used for choosing mode
 		int mode;
 		Scanner sc = new Scanner(System.in);
 		
+		// Get int "mode" from the user
 		mode = client.chooseMode(sc);
+		
+		// Enter main loop
+		//	1) Look at int "mode"
+		//	2) If not 0, enter according mode using method call
+		//	3) If 0, exit loop
 		while (mode > 0) {
 			try {
 				switch (mode) {
@@ -68,10 +79,19 @@ public class MadLibsClient {
 			mode = client.chooseMode(sc);
 		}
 		
+		// Disconnect from the server
+		sc.close();
 		client.disconnect();
 		
 	}
 	
+	/**
+	 * Gets an integer from the client. This integer is sent to the server to choose a game mode.
+	 * If the mode does not exist on the server (wrong int), then the client will ask the user to
+	 * enter a different int. 
+	 * @param sc:Scanner - scanner used to interact with the client
+	 * @return int
+	 */
 	private int chooseMode(Scanner sc) {
 		int mode_int = 1;
 		int check = 0;
@@ -86,7 +106,8 @@ public class MadLibsClient {
 			mode_int = sc.nextInt();
 			sendInt(mode_int);
 			
-			if ( (check=receiveInt()) == 0 ) { // Check that the mode option is a valid choice
+			// Check that the mode option is a valid choice
+			if ( (check=receiveInt()) == 0 ) {
 				// NOTE: All checks are done on the server.
 				//	     If a bad argument is sent, then "check" (an int read from the server) will not be 0
 				
@@ -94,15 +115,22 @@ public class MadLibsClient {
 				message = receiveString();
 				System.out.println(message);
 				
+				// Return chosen mode to the main loop
 				return mode_int;
+				// Exit this loop
 			} else {
+				// Get message ("that mode doesn't exist") from the server and print to screen
 				message = receiveString();
 				System.out.println(message);
 			}
 		}
+		// Not supposed to get here
 		return -1;
 	}
 	
+	/**
+	 * Begins running "play" mode
+	 */
 	private void beginPlayMode () {
 		String message;
 		
@@ -111,18 +139,45 @@ public class MadLibsClient {
 		System.out.println(message);
 	}
 	
+	/**
+	 * Begins running "create" mode
+	 */
 	private void beginCreateMode () {
-	
+		String message;
+		
+		// Get message (exiting mode confirmation) from server and print to screen
+		message = receiveString();
+		System.out.println(message);
 	}
 	
+	/**
+	 * Begins running "read" mode
+	 */
 	private void beginReadMode () {
+		String message;
 		
+		// Get message (exiting mode confirmation) from server and print to screen
+		message = receiveString();
+		System.out.println(message);
 	}
 	
+	/**
+	 * Disconnects the server from the client, and cleans up
+	 */
 	private void disconnect() {
+		String message;
 		
+		// Get message (exiting mode confirmation) from server and print to screen
+		message = receiveString();
+		System.out.println(message);
 	}
 	
+	/**
+	 * Writes a string to the connected server socket
+	 * @param s:String - string to be sent
+	 * @return 	0 if successful
+	 * 			1 if unsuccessful
+	 */
 	private int sendString(String s) {
 		try {
 			output.writeUTF(s);
@@ -134,6 +189,12 @@ public class MadLibsClient {
 		}
 	}
 	
+	/**
+	 * Writes an int to the connected server socket
+	 * @param i:int - int to be sent
+	 * @return 	0 if successful
+	 * 			1 if unsuccessful
+	 */
 	private int sendInt(int i) {
 		try {
 			output.writeInt(i);
@@ -145,6 +206,11 @@ public class MadLibsClient {
 		}
 	}
 	
+	/**
+	 * Reads an int from the connected server socket
+	 * @return 	received int if successful
+	 * 			null if unsuccessful
+	 */
 	private Integer receiveInt() {
 		try {
 			int i = input.readInt();
@@ -156,6 +222,11 @@ public class MadLibsClient {
 		}
 	}
 	
+	/**
+	 * Reads a String from the connected server socket
+	 * @return 	received String if successful
+	 * 			null if unsuccessful
+	 */
 	private String receiveString() {
 		try {
 			String s = input.readUTF();

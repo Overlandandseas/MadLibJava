@@ -155,6 +155,12 @@ public class MadLibsHandler implements Runnable {
 		sendString("Disconnecting...");
 	}
 	
+	/**
+	 * Writes a string to the connected client socket
+	 * @param s:String - string to be sent
+	 * @return 	0 if successful
+	 * 			1 if unsuccessful
+	 */
 	private int sendString(String s) {
 		try {
 			output.writeUTF(s);
@@ -166,6 +172,12 @@ public class MadLibsHandler implements Runnable {
 		}
 	}
 	
+	/**
+	 * Writes an int to the connected client socket
+	 * @param i:int - int to be sent
+	 * @return 	0 if successful
+	 * 			1 if unsuccessful
+	 */
 	private int sendInt(int i) {
 		try {
 			output.writeInt(i);
@@ -177,6 +189,11 @@ public class MadLibsHandler implements Runnable {
 		}
 	}
 	
+	/**
+	 * Reads an int from the connected client socket
+	 * @return 	received int if successful
+	 * 			null if unsuccessful
+	 */
 	private Integer receiveInt() {
 		try {
 			int i = input.readInt();
@@ -188,6 +205,11 @@ public class MadLibsHandler implements Runnable {
 		}
 	}
 	
+	/**
+	 * Reads a String from the connected client socket
+	 * @return 	received String if successful
+	 * 			null if unsuccessful
+	 */
 	private String receiveString() {
 		try {
 			String s = input.readUTF();
