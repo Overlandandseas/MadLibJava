@@ -52,11 +52,9 @@ public class MadLibsHandler implements Runnable {
 					beginReadMode();
 					break;
 				default:
-					throw new Exception("Thread[%d]: Error switching modes");
+					String error = "Thread-["+id+"]: Error switching modes";
+					throw new Exception(error);
 				}
-			} catch (IOException e) {
-				System.out.println("Exception: " + e.getClass().toString());
-				System.out.println("\t" + e.getMessage());
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getClass().toString());
 				System.out.println("\t" + e.getMessage());
@@ -64,7 +62,7 @@ public class MadLibsHandler implements Runnable {
 			mode = chooseMode();
 		}
 		
-		beginDisconnect();
+		disconnect();
 		disconnect_status = 0;
 		
 		// Print disconnect status before closing the thread
@@ -153,7 +151,7 @@ public class MadLibsHandler implements Runnable {
 	/**
 	 * Disconnects the client from the server, and cleans up
 	 */
-	private void beginDisconnect() {
+	private void disconnect() {
 		sendString("Disconnecting...");
 	}
 	
