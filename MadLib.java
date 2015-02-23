@@ -32,9 +32,6 @@ public class MadLib {
 					throw new BadMadLibDataException("A blank space is 0 chars long! Can't do that.");
 				count = flip ? c : c + 1;
 			}
-			System.out.println("c:      " + c);
-			System.out.println("length: " + entered.length());
-			System.out.println("flip:   " + flip);
 			if(count == entered.length()-1 && flip)
 				throw new BadMadLibDataException("You are missing a % somewhwere.");
 		}
