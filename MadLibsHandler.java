@@ -135,7 +135,7 @@ public class MadLibsHandler implements Runnable {
 	private int beginCreateMode() {
 		// try{
 		// 	if(MadLibSet.add(new MadLib(receiveString())))
-		// 	sendString("THANKS!");
+		// 		sendString("THANKS!");
 		//
 		// } catch(BadMadLibDataException ex){
 		// 	ex.printStackTrace();
