@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class MadLibsHandler implements Runnable {
-	static DataOutputStream output;
-	static DataInputStream input;
-	static Socket remote_socket;
+	 DataOutputStream output;
+	 DataInputStream input;
+	 Socket remote_socket;
 
 	/**
 	 * Constructor
@@ -133,11 +133,11 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "create" mode
 	 */
 	private int beginCreateMode() {
-		// try{
-		// 	if(MadLibSet.add(new MadLib(receiveString())))
-		// 		sendString("THANKS!");
-		//
-		// } catch(BadMadLibDataException ex){
+			// try{
+			// 	if(MadLibSet.add(new MadLib(receiveString())))
+			// 		sendString("THANKS!");
+			//
+			// } catch(BadMadLibDataException ex){
 		// 	ex.printStackTrace();
 		// }
 
@@ -171,7 +171,7 @@ public class MadLibsHandler implements Runnable {
 	 * @return 	0 if successful
 	 * 			1 if unsuccessful
 	 */
-	public static int sendString(String s) {
+	public int sendString(String s) {
 		try {
 			output.writeUTF(s);
 			return 0;
@@ -188,7 +188,7 @@ public class MadLibsHandler implements Runnable {
 	 * @return 	0 if successful
 	 * 			1 if unsuccessful
 	 */
-	public static int sendInt(int i) {
+	public int sendInt(int i) {
 		try {
 			output.writeInt(i);
 			return 0;
@@ -204,7 +204,7 @@ public class MadLibsHandler implements Runnable {
 	 * @return 	received int if successful
 	 * 			null if unsuccessful
 	 */
-	public static Integer receiveInt() {
+	public Integer receiveInt() {
 		try {
 			int i = input.readInt();
 			return i;
@@ -220,7 +220,7 @@ public class MadLibsHandler implements Runnable {
 	 * @return 	received String if successful
 	 * 			null if unsuccessful
 	 */
-	public static String receiveString() {
+	public String receiveString() {
 		try {
 			String s = input.readUTF();
 			return s;
@@ -231,7 +231,7 @@ public class MadLibsHandler implements Runnable {
 		}
 	}
 
-	public static void main(String[] args) {
+	public void main(String[] args) {
 		// Usage
 		System.out
 				.println("This class is meant to be used by a MadLibsServer object");

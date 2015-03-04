@@ -118,7 +118,7 @@ public class MadLib {
 
 	public static void main(String[] args) {
 		try{
-		MadLib b = new MadLib("I don't think that the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
+		MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 
 			//  MadLib b = new MadLib("Right %DOES% %THIS% %BREAK% %ANYTHING?% lLl this is after here");
 			//                      0123456789012345678901234567890123
