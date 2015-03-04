@@ -9,13 +9,13 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class MadLibsHandler implements Runnable {
-	DataOutputStream output;
-	DataInputStream input;
-	Socket remote_socket;
+	static DataOutputStream output;
+	static DataInputStream input;
+	static Socket remote_socket;
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param remote_socket
 	 */
 	public MadLibsHandler(Socket remote_socket) {
@@ -34,10 +34,10 @@ public class MadLibsHandler implements Runnable {
 	@Override
 	public void run() {
 		long id = Thread.currentThread().getId();
-		
+
 		int disconnect_status = -1;
 		int mode;
-		
+
 		mode = chooseMode();
 		while (mode > 0) {
 			try {
@@ -61,10 +61,10 @@ public class MadLibsHandler implements Runnable {
 			}
 			mode = chooseMode();
 		}
-		
+
 		disconnect();
 		disconnect_status = 0;
-		
+
 		// Print disconnect status before closing the thread
 		if (disconnect_status == 0) {
 			System.out.printf("Thread[%d]: Disconnected gracefully", id);
@@ -73,7 +73,7 @@ public class MadLibsHandler implements Runnable {
 		}
 
 	}
-	
+
 	private int chooseMode () {
 		// Declare variables used to store client communications
 		int client_input = 1;
@@ -124,6 +124,7 @@ public class MadLibsHandler implements Runnable {
 	private int beginPlayMode() {
 		System.out.println("MODE NOT YET IMPLEMENTED");
 		System.out.println("Exiting mode...");
+		// sendString(MadLibSet.giveRandom().playNet());
 		sendString("Exiting mode...");
 		return 0;
 	}
@@ -132,6 +133,15 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "create" mode
 	 */
 	private int beginCreateMode() {
+		// try{
+		// 	if(MadLibSet.add(new MadLib(receiveString())))
+		// 	sendString("THANKS!");
+		//
+		// } catch(BadMadLibDataException ex){
+		// 	ex.printStackTrace();
+		// }
+
+		//TODO
 		System.out.println("MODE NOT YET IMPLEMENTED");
 		System.out.println("Exiting mode...");
 		sendString("Exiting mode...");
@@ -147,21 +157,21 @@ public class MadLibsHandler implements Runnable {
 		sendString("Exiting mode...");
 		return 0;
 	}
-	
+
 	/**
 	 * Disconnects the client from the server, and cleans up
 	 */
 	private void disconnect() {
 		sendString("Disconnecting...");
 	}
-	
+
 	/**
 	 * Writes a string to the connected client socket
 	 * @param s:String - string to be sent
 	 * @return 	0 if successful
 	 * 			1 if unsuccessful
 	 */
-	private int sendString(String s) {
+	public static int sendString(String s) {
 		try {
 			output.writeUTF(s);
 			return 0;
@@ -171,14 +181,14 @@ public class MadLibsHandler implements Runnable {
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * Writes an int to the connected client socket
 	 * @param i:int - int to be sent
 	 * @return 	0 if successful
 	 * 			1 if unsuccessful
 	 */
-	private int sendInt(int i) {
+	public static int sendInt(int i) {
 		try {
 			output.writeInt(i);
 			return 0;
@@ -188,13 +198,13 @@ public class MadLibsHandler implements Runnable {
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * Reads an int from the connected client socket
 	 * @return 	received int if successful
 	 * 			null if unsuccessful
 	 */
-	private Integer receiveInt() {
+	public static Integer receiveInt() {
 		try {
 			int i = input.readInt();
 			return i;
@@ -204,13 +214,13 @@ public class MadLibsHandler implements Runnable {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Reads a String from the connected client socket
 	 * @return 	received String if successful
 	 * 			null if unsuccessful
 	 */
-	private String receiveString() {
+	public static String receiveString() {
 		try {
 			String s = input.readUTF();
 			return s;

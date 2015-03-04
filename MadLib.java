@@ -1,6 +1,8 @@
 //JAVA IS A LANGUAGE PEOPLE USE AT TIME
 
 import java.util.*;
+import java.io.*;
+import java.net.*;
 
 public class MadLib {
 
@@ -66,6 +68,33 @@ public class MadLib {
 	}
 	public void playNprint() {
 		System.out.println(play());
+	}
+
+	// public String play(DataInputStream input, DataOutputStream output){
+	// 	StringBuilder temp = new StringBuilder();
+	//
+	// 	for(short c = 0; c <wordsArray.size(); c++){
+	// 		if(boolArray.get(c)){
+	// 			output.writeChars("Please enter a "+ wordsArray.get(c) + ":  ");
+	// 			temp.append(input.readLine());
+	// 		} else{
+	// 			temp.append(wordsArray.get(c));
+	// 		}
+	// 	}
+	// 	return temp.toString();
+	// }
+	public String playNet(){
+		StringBuilder temp = new StringBuilder();
+
+		for(short c = 0; c <wordsArray.size(); c++){
+			if(boolArray.get(c)){
+				MadLibsHandler.sendString("Please enter a "+ wordsArray.get(c) + ":  ");
+				temp.append(MadLibsHandler.receiveString());
+			} else{
+				temp.append(wordsArray.get(c));
+			}
+		}
+		return temp.toString();
 	}
 
 	public String play() {
