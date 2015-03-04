@@ -30,6 +30,7 @@ public class MadLibSet {
 		fil.get(ent).add(s);
 	}
 
+
 	public static MadLib giveRandom() {
 		ArrayList<MadLib> mads = new ArrayList<>(mad.values());
 		return mads.get((new Random()).nextInt(mads.size()));
@@ -51,9 +52,7 @@ public class MadLibSet {
 	}
 
 	public static void main(String[] args) {
-		MadLib a;
-		MadLib b;
-		MadLib c;
+		MadLib a, b, c;
 		try {
 			a = new MadLib("Why don't you love %plural noun% as much as I do?");
 			MadLibSet.add("First Key", a);
