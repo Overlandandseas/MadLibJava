@@ -70,32 +70,21 @@ public class MadLib {
 		System.out.println(play());
 	}
 
-	// public String play(DataInputStream input, DataOutputStream output){
-	// 	StringBuilder temp = new StringBuilder();
-	//
-	// 	for(short c = 0; c <wordsArray.size(); c++){
-	// 		if(boolArray.get(c)){
-	// 			output.writeChars("Please enter a "+ wordsArray.get(c) + ":  ");
-	// 			temp.append(input.readLine());
-	// 		} else{
-	// 			temp.append(wordsArray.get(c));
-	// 		}
-	// 	}
-	// 	return temp.toString();
-	// }
-	public String playNet(){
-		StringBuilder temp = new StringBuilder();
-
-		for(short c = 0; c <wordsArray.size(); c++){
-			if(boolArray.get(c)){
-				MadLibsHandler.sendString("Please enter a "+ wordsArray.get(c) + ":  ");
-				temp.append(MadLibsHandler.receiveString());
-			} else{
-				temp.append(wordsArray.get(c));
-			}
-		}
-		return temp.toString();
+	public String play(MadLibsHandler handler){
+		return playRec(handler, new StringBuilder(), 0);
 	}
+
+	public String playRec(MadLibsHandler handler, StringBuilder s, int n){
+		if(boolArray.get(n)){
+			handler.sendString("Please enter a "+ wordsArray.get(n) + ":  ");
+			s.append(handler.receiveString());
+		} else
+			s.append(wordsArray.get(n));
+		if(n < wordsArray.size())
+			return playRec(handler, s, n++);
+		return s.toString();
+	}
+
 
 	public String play() {
 		StringBuilder temp = new StringBuilder();
