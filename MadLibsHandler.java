@@ -136,11 +136,11 @@ public class MadLibsHandler implements Runnable {
 		sendString("Lets make a mad lib");
 		// sendString("Use %word% to show which words are the madlibs");
 		try{
-			if(MadLibSet.add(new MadLib(receiveString())))
-				sendString("THANKS!");
+			MadLibSet.add(new MadLib(receiveString()));
+			sendString("THANKS!");
 
 		} catch(BadMadLibDataException ex){
-			ex.printStackTrace();
+			sendString(ex.getMessage());
 		}
 
 		//TODO

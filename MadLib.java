@@ -45,6 +45,9 @@ public class MadLib {
 	public MadLib(String entered) throws BadMadLibDataException{
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
+		if(!entered.contains("%"))
+			throw new BadMadLibDataException("i hate you...");
+
 		recurseMadLib(entered, false);
 	}
 	private void recurseMadLib(String ent, Boolean flip) throws BadMadLibDataException{

@@ -12,18 +12,18 @@ public class MadLibsClient {
 	 * Constructor
 	 */
 	public MadLibsClient(String hostname, int port) {
-		sc = new Scanner(System.in);
 		try {
 			this.server_socket = new Socket(hostname, port);
 			// Get input/output streams
 			this.input = new DataInputStream(server_socket.getInputStream());
 			this.output = new DataOutputStream(server_socket.getOutputStream());
-
+			this.sc = new Scanner(System.in);
 		} catch (IOException e) {
 			System.out.println("Exception: " + e.getClass().toString());
 			System.out.println("\t" + e.getMessage());
 		}
 	}
+
 
 	/**
 	 * Main method. Pass args according to usage to begin running a new MadLibsClient
@@ -50,7 +50,6 @@ public class MadLibsClient {
 
 		// Declare variables used for choosing mode
 		int mode;
-		// Scanner sc = new Scanner(System.in);
 
 		// Get int "mode" from the user
 		mode = client.chooseMode();
@@ -105,7 +104,7 @@ public class MadLibsClient {
 			System.out.println(message);
 
 			// Get int from the user (mode choice)
-			mode_int = sc.nextInt();
+			mode_int = getInt();
 			sendInt(mode_int);
 
 			// Check that the mode option is a valid choice
@@ -147,13 +146,12 @@ public class MadLibsClient {
 	private void beginCreateMode () {
 		String message;
 		System.out.println(receiveString());
-		// Scanner sc = new Scanner(System.in);
-		sendString(sc.nextLine());
-
+		String s = getLine();
+		sendString(s);
 
 		// Get message (exiting mode confirmation) from server and print to screen
-		message = receiveString();
-		System.out.println(message);
+		System.out.println(receiveString());
+		System.out.println(receiveString());
 	}
 
 	/**
@@ -243,5 +241,18 @@ public class MadLibsClient {
 			System.out.println("\t" + e.getMessage());
 			return null;
 		}
+	}
+
+	private String getLine() {
+		// System.out.println("Does the scanner have next line? "+sc.hasNextLine());
+		String inp = sc.nextLine();
+		System.out.println("inp: "+ inp);
+		// System.out.println("line 253, did we wait for user input?");
+		return inp;
+	}
+
+	private int getInt() {
+		int i = Integer.valueOf(getLine());
+		return i;
 	}
 }
