@@ -6,7 +6,8 @@ public class MadLibsClient {
 	DataOutputStream output;
 	DataInputStream input;
 	Socket server_socket;
-	
+	Scanner sc;
+
 	/**
 	 * Constructor
 	 */
@@ -16,12 +17,13 @@ public class MadLibsClient {
 			// Get input/output streams
 			this.input = new DataInputStream(server_socket.getInputStream());
 			this.output = new DataOutputStream(server_socket.getOutputStream());
-
+			this.sc = new Scanner(System.in);
 		} catch (IOException e) {
 			System.out.println("Exception: " + e.getClass().toString());
 			System.out.println("\t" + e.getMessage());
 		}
 	}
+
 
 	/**
 	 * Main method. Pass args according to usage to begin running a new MadLibsClient
@@ -45,14 +47,13 @@ public class MadLibsClient {
 
 		// Create new MadLibClient
 		MadLibsClient client = new MadLibsClient(hostName, portNumber);
-		
+
 		// Declare variables used for choosing mode
 		int mode;
-		Scanner sc = new Scanner(System.in);
-		
+
 		// Get int "mode" from the user
-		mode = client.chooseMode(sc);
-		
+		mode = client.chooseMode();
+
 		// Enter main loop
 		//	1) Look at int "mode"
 		//	2) If not 0, enter according mode using method call
@@ -76,45 +77,45 @@ public class MadLibsClient {
 				System.out.println("Exception: " + e.getClass().toString());
 				System.out.println("\t" + e.getMessage());
 			}
-			mode = client.chooseMode(sc);
+			mode = client.chooseMode();
 		}
-		
+
 		// Disconnect from the server
-		sc.close();
+
 		client.disconnect();
-		
+
 	}
-	
+
 	/**
 	 * Gets an integer from the client. This integer is sent to the server to choose a game mode.
 	 * If the mode does not exist on the server (wrong int), then the client will ask the user to
-	 * enter a different int. 
+	 * enter a different int.
 	 * @param sc:Scanner - scanner used to interact with the client
 	 * @return int
 	 */
-	private int chooseMode(Scanner sc) {
+	private int chooseMode() {
 		int mode_int = 1;
 		int check = 0;
 		String message;
-		
+
 		while ( check == 0 ) { // While the client hasn't chosen the disconnect option
 			// Get message (game mode options) from server and print to screen
 			message = receiveString();
 			System.out.println(message);
-			
+
 			// Get int from the user (mode choice)
-			mode_int = sc.nextInt();
+			mode_int = getInt();
 			sendInt(mode_int);
-			
+
 			// Check that the mode option is a valid choice
 			if ( (check=receiveInt()) == 0 ) {
 				// NOTE: All checks are done on the server.
 				//	     If a bad argument is sent, then "check" (an int read from the server) will not be 0
-				
+
 				// Get message (game mode confirmation) from server and print to screen
 				message = receiveString();
 				System.out.println(message);
-				
+
 				// Return chosen mode to the main loop
 				return mode_int;
 				// Exit this loop
@@ -127,51 +128,55 @@ public class MadLibsClient {
 		// Not supposed to get here
 		return -1;
 	}
-	
+
 	/**
 	 * Begins running "play" mode
 	 */
 	private void beginPlayMode () {
 		String message;
-		
+
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
 		System.out.println(message);
 	}
-	
+
 	/**
 	 * Begins running "create" mode
 	 */
 	private void beginCreateMode () {
 		String message;
-		
+		System.out.println(receiveString());
+		String s = getLine();
+		sendString(s);
+
 		// Get message (exiting mode confirmation) from server and print to screen
-		message = receiveString();
-		System.out.println(message);
+		System.out.println(receiveString());
+		System.out.println(receiveString());
 	}
-	
+
 	/**
 	 * Begins running "read" mode
 	 */
 	private void beginReadMode () {
 		String message;
-		
+
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
 		System.out.println(message);
 	}
-	
+
 	/**
 	 * Disconnects the server from the client, and cleans up
 	 */
 	private void disconnect() {
 		String message;
-		
+		// sc.close();
+
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
 		System.out.println(message);
 	}
-	
+
 	/**
 	 * Writes a string to the connected server socket
 	 * @param s:String - string to be sent
@@ -188,7 +193,7 @@ public class MadLibsClient {
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * Writes an int to the connected server socket
 	 * @param i:int - int to be sent
@@ -205,7 +210,7 @@ public class MadLibsClient {
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * Reads an int from the connected server socket
 	 * @return 	received int if successful
@@ -221,7 +226,7 @@ public class MadLibsClient {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Reads a String from the connected server socket
 	 * @return 	received String if successful
@@ -236,5 +241,18 @@ public class MadLibsClient {
 			System.out.println("\t" + e.getMessage());
 			return null;
 		}
+	}
+
+	private String getLine() {
+		// System.out.println("Does the scanner have next line? "+sc.hasNextLine());
+		String inp = sc.nextLine();
+		System.out.println("inp: "+ inp);
+		// System.out.println("line 253, did we wait for user input?");
+		return inp;
+	}
+
+	private int getInt() {
+		int i = Integer.valueOf(getLine());
+		return i;
 	}
 }

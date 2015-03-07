@@ -133,6 +133,7 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "create" mode
 	 */
 	private int beginCreateMode() {
+<<<<<<< HEAD
 			// try{
 			// 	if(MadLibSet.add(new MadLib(receiveString())))
 			// 		sendString("THANKS!");
@@ -140,10 +141,21 @@ public class MadLibsHandler implements Runnable {
 			// } catch(BadMadLibDataException ex){
 		// 	ex.printStackTrace();
 		// }
+=======
+		sendString("Lets make a mad lib");
+		// sendString("Use %word% to show which words are the madlibs");
+		try{
+			MadLibSet.add(new MadLib(receiveString()));
+			sendString("THANKS!");
+
+		} catch(BadMadLibDataException ex){
+			sendString(ex.getMessage());
+		}
+>>>>>>> lucas-Dev
 
 		//TODO
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
+		// System.out.println("MODE NOT YET IMPLEMENTED");
+		// System.out.println("Exiting mode...");
 		sendString("Exiting mode...");
 		return 0;
 	}
