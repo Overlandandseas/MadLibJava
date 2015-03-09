@@ -8,6 +8,7 @@ public class MadLib {
 
 	ArrayList<String> wordsArray;
 	ArrayList<Boolean> boolArray;
+	int boolArray_int;
 	short rating;
 
 
@@ -17,31 +18,6 @@ public class MadLib {
 	}
 
 	// constructor
-	/*
-	public MadLib(String entered) throws BadMadLibDataException{
-		wordsArray = new ArrayList<>();
-		boolArray = new ArrayList<>();
-		int count = 0;
-		Boolean flip = false;
-		System.out.println(entered.length());
-		for (int c = 0; c < entered.length(); c++) {
-			if (entered.charAt(c) == '%'|| c == entered.length()) {
-				wordsArray.add(entered.substring(count, c));
-				boolArray.add(flip);
-				if(entered.charAt(c) == '%')
-					flip = !flip;
-				System.out.println("C is " + c + ". And count is " + count + ".");
-				System.out.println("Flip is " + flip);
-				count = flip ? c : c + 1;
-				if(count == c && !flip)
-					throw new BadMadLibDataException("A blank space is 0 chars long! Can't do that.");
-				//if(c != entered.length()-1)
-				if(count == entered.length()-1 && flip)
-					throw new BadMadLibDataException("You are missing a % somewhwere.");
-			}
-		}
-	}*/
-
 	public MadLib(String entered) throws BadMadLibDataException{
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
@@ -49,6 +25,7 @@ public class MadLib {
 			throw new BadMadLibDataException("i hate you...");
 
 		recurseMadLib(entered, false);
+		intify();
 	}
 	private void recurseMadLib(String ent, Boolean flip) throws BadMadLibDataException{
 		if(ent.substring(0, ent.indexOf("%")).length() == 0 && flip)
@@ -66,8 +43,19 @@ public class MadLib {
 				}
 	}
 
+	private void intify(){
+		StingBuilder boolStr = new StringBuilder();
+		boolStr.append("1");
+		for(boolean b : boolArray){
+			boolStr.append(b ? "1" : "0");
+		}
+		boolArray_int = Integer.parseInt(boolStr.toString(), 2);
+	}
 	public void playNstore(){
 		MadLibSet.addCompleted(this, play());
+	}
+	public int getInt(){
+		return boolArray_int;
 	}
 	public void playNprint() {
 		System.out.println(play());
