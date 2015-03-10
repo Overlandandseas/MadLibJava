@@ -30,7 +30,11 @@ public class MadLibSet {
 		fil.get(ent).add(s);
 	}
 
-
+	//NOT AT ALL HOW YOU WOULD DO IT
+	// public static Sting giveRandomComp(){
+	// 	ArrayList<String> strings = new ArrayList<>(fil.values());
+	// 	return strings.get((new Random()).nextInt(strings.size()));
+	// }
 	public static MadLib giveRandom() {
 		ArrayList<MadLib> mads = new ArrayList<>(mad.values());
 		return mads.get((new Random()).nextInt(mads.size()));
