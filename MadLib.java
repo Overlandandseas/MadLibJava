@@ -8,7 +8,6 @@ public class MadLib {
 
 	ArrayList<String> wordsArray;
 	ArrayList<Boolean> boolArray;
-	int boolArray_int;
 	short rating;
 
 
@@ -43,36 +42,37 @@ public class MadLib {
 				}
 	}
 
-	private void intify(){
-		StringBuilder boolStr = new StringBuilder();
-		boolStr.append("1");
-		for(boolean b : boolArray){
-			boolStr.append(b ? "1" : "0");
-		}
-		boolArray_int = Integer.parseInt(boolStr.toString(), 2);
+	private int intify(){
+		int i = 0;
+		for(boolean b : boolArray)
+			if(b)
+				i++;
+		return i;
 	}
 	public void playNstore(){
 		MadLibSet.addCompleted(this, play());
 	}
-	public int getInt(){
-		return boolArray_int;
-	}
+
+
 	public void playNprint() {
 		System.out.println(play());
 	}
 
-	public String play(MadLibsHandler handler){
-		return playRec(handler, new StringBuilder(), 0);
+	public String play(MadLibsHandler handy){
+		handy.sendInt(intify());
+		return playRec(handy, new StringBuilder(), 0);
 	}
 
-	public String playRec(MadLibsHandler handler, StringBuilder s, int n){
+	public String playRec(MadLibsHandler handy, StringBuilder s, int n){
+		System.out.println(s.toString() + " : " + n);
 		if(boolArray.get(n)){
-			handler.sendString("Please enter a "+ wordsArray.get(n) + ":  ");
-			s.append(handler.receiveString());
+			handy.sendString("Please enter a "+ wordsArray.get(n) + ":  ");
+			s.append(handy.receiveString());
 		} else
 			s.append(wordsArray.get(n));
-		if(n < wordsArray.size())
-			return playRec(handler, s, n++);
+		if(n < wordsArray.size()-1)
+			playRec(handy, s, ++n);
+
 		return s.toString();
 	}
 
@@ -98,10 +98,10 @@ public class MadLib {
 
 	public static void main(String[] args) {
 		try{
-		MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
-
+			// MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 			//  MadLib b = new MadLib("Right %DOES% %THIS% %BREAK% %ANYTHING?% lLl this is after here");
 			//                      0123456789012345678901234567890123
+			MadLib b = new MadLib("Hey %name%, I like your %body part%. Like a lot.");
 			b.playNprint();
 		} catch(BadMadLibDataException ex){
 			ex.printStackTrace();

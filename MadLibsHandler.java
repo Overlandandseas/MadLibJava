@@ -122,15 +122,10 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "play" mode
 	 */
 	private int beginPlayMode() {
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
 		MadLib madt = MadLibSet.giveRandom();
-		sendInt(madt.getInt());
-		// for()
-
-
-		// sendString(MadLibSet.giveRandom().playNet());
-		sendString("Exiting mode...");
+		String full = madt.play(this);
+		sendString(full);
+		MadLibSet.addCompleted(madt, full);
 		return 0;
 	}
 
@@ -138,16 +133,10 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "create" mode
 	 */
 	private int beginCreateMode() {
-					// try{
-			// 	if(MadLibSet.add(new MadLib(receiveString())))
-			// 		sendString("THANKS!");
-			//
-			// } catch(BadMadLibDataException ex){
-		// 	ex.printStackTrace();
-		// }
 
-				sendString("Lets make a mad lib");
-		// sendString("Use %word% to show which words are the madlibs");
+
+			sendString("Lets make a mad lib");
+			sendString("Use %word% to show which words are the madlibs");
 		try{
 			MadLibSet.add(new MadLib(receiveString()));
 			sendString("THANKS!");
@@ -156,9 +145,6 @@ public class MadLibsHandler implements Runnable {
 			sendString(ex.getMessage());
 		}
 
-		//TODO
-		// System.out.println("MODE NOT YET IMPLEMENTED");
-		// System.out.println("Exiting mode...");
 		sendString("Exiting mode...");
 		return 0;
 	}

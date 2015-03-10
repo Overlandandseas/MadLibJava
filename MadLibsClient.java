@@ -135,12 +135,9 @@ public class MadLibsClient {
 	private void beginPlayMode () {
 		String message;
 		int i = receiveInt();
-
-		for(char c : Integer.toBinaryString(i).substring(1).toCharArray()){
-			if(c == '0')
-				receiveString();
-			else
-				sendString(getLine());
+		for(int c = 0; c < i; c++){
+			System.out.print(receiveString());
+			sendString(getLine());
 		}
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
@@ -153,11 +150,11 @@ public class MadLibsClient {
 	private void beginCreateMode () {
 		String message;
 		System.out.println(receiveString());
-		String s = getLine();
-		sendString(s);
-
-		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.println(receiveString());
+		// String s = getLine();
+		sendString(getLine());
+		System.out.println(receiveString());
+		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.println(receiveString());
 	}
 
@@ -253,7 +250,7 @@ public class MadLibsClient {
 	private String getLine() {
 		// System.out.println("Does the scanner have next line? "+sc.hasNextLine());
 		String inp = sc.nextLine();
-		System.out.println("inp: "+ inp);
+		// System.out.println("inp: "+ inp);
 		// System.out.println("line 253, did we wait for user input?");
 		return inp;
 	}
