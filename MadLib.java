@@ -44,7 +44,7 @@ public class MadLib {
 	}
 
 	private void intify(){
-		StingBuilder boolStr = new StringBuilder();
+		StringBuilder boolStr = new StringBuilder();
 		boolStr.append("1");
 		for(boolean b : boolArray){
 			boolStr.append(b ? "1" : "0");
