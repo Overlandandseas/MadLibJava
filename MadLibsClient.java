@@ -140,7 +140,7 @@ public class MadLibsClient {
 			if(c == '0')
 				receiveString();
 			else
-				sendString();
+				sendString(getLine());
 		}
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
