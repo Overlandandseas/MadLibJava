@@ -124,6 +124,11 @@ public class MadLibsHandler implements Runnable {
 	private int beginPlayMode() {
 		System.out.println("MODE NOT YET IMPLEMENTED");
 		System.out.println("Exiting mode...");
+		MadLib madt = MasLibSet.giveRandom();
+		sendInt(madt.getInt());
+		// for()
+
+
 		// sendString(MadLibSet.giveRandom().playNet());
 		sendString("Exiting mode...");
 		return 0;

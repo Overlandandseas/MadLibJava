@@ -134,7 +134,14 @@ public class MadLibsClient {
 	 */
 	private void beginPlayMode () {
 		String message;
+		int i = receiveInt();
 
+		for(char c : Integer.toBinaryString(i).substring(1).toCharArray()){
+			if(c == '0')
+				receiveString();
+			else
+				sendString();
+		}
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
 		System.out.println(message);
