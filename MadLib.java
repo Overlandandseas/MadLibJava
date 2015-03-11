@@ -1,8 +1,6 @@
 //JAVA IS A LANGUAGE PEOPLE USE AT TIME
 
 import java.util.*;
-import java.io.*;
-import java.net.*;
 
 public class MadLib {
 

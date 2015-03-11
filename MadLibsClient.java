@@ -148,7 +148,6 @@ public class MadLibsClient {
 	 * Begins running "create" mode
 	 */
 	private void beginCreateMode () {
-		String message;
 		System.out.println(receiveString());
 		System.out.println(receiveString());
 		// String s = getLine();
