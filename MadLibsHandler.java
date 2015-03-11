@@ -127,21 +127,37 @@ public class MadLibsHandler implements Runnable {
 	 */
 	private int beginCreateMode() {
 		// sendString("Use %word% to show which words are the madlibs");
-		String message = "";
+		String ent = "";
+		String key = "";
+		boolean key_in_use;
 		do {
 			//System.out.println("Server: Top of loop");
 			sendString("MadLibsServer: Enter a new MadLib below (or just return to exit):\n > (String) ");
-			message = receiveString();
-			if ( !message.equals("") ) {
+			ent = receiveString();
+			if ( !(ent.equals("")) ) {
 				try{
-					MadLibSet.add(new MadLib(message));
-					MadLibSet.saveAll();
-					sendString("MadLibsServer: Thanks! Your MadLib has been saved.\n");
+					MadLib new_m_l = new MadLib(ent);
+					sendInt(0);
+					sendString("MadLibsServer: MadLib title?\n > (String) ");
+					key = receiveString();
+					if ( !(key.equals("")) ) {
+						key_in_use = !MadLibSet.add(key, new_m_l);
+					} else {
+						key_in_use = !MadLibSet.add(new_m_l);
+					}
+					if (key_in_use) {
+						sendString("MadLibsServer: Sorry, that name is already used! Upload cancelled\n");
+					} else {
+						MadLibSet.saveAll();
+						sendString("MadLibsServer: Your new MadLib has been uploaded!\n");
+					}
 				} catch (BadMadLibDataException ex) {
-					sendString("MadLibsServer: "+ex.getMessage()+"\n");
+					sendInt(1);
+					sendString("MadLibsServer: MadLib formatting error!\n");
 				}
 			}
-		} while ( !(message.equals("")) );
+		} while ( !(ent.equals("")) );
+		MadLibSet.saveAll();
 		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
 	}

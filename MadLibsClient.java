@@ -146,15 +146,38 @@ public class MadLibsClient {
 	 * Begins running "create" mode
 	 */
 	private void beginCreateMode () {
-		String s;
+		String madLib;
+		int check = 1;
 		do {
 			//System.out.println("Client: Top of loop");
 			System.out.print(receiveString());
-			s = getLine();
-			sendString(s);
-			if ( !s.equals("") )
+			madLib = getLine();
+			sendString(madLib);
+			if ( !madLib.equals("") ) {
+				check = receiveInt();
 				System.out.print(receiveString());
-		} while (!s.equals(""));
+				if (check == 1)
+					continue;
+			} else {
+				break;
+			}
+			if (check == 0) {
+				String name = getLine();
+				sendString(name);
+			}
+			System.out.print(receiveString());
+		} while (!madLib.equals("") || check == 1);
+		
+		/*String name;
+		do {
+			//System.out.println("Client: Top of loop");
+			System.out.print(receiveString());
+			name = getLine();
+			sendString(name);
+			if ( !name.equals("") )
+				System.out.print(receiveString());
+		} while (!name.equals(""));
+		*/
 
 		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.print(receiveString());

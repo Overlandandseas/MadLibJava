@@ -37,7 +37,7 @@ public class MadLibsServer {
 			
 			if (MadLibSet.loadAll()) {
 				System.out.println("MadLibsServer: MadLibSet loaded from \"MadLibs.txt\"...");
-				MadLibSet.printList();
+				//MadLibSet.printList();
 			} else {
 				System.out.println("MadLibsServer: MadLibSet is empty");
 			}
