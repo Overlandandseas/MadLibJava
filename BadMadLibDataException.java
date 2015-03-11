@@ -9,6 +9,7 @@ public class BadMadLibDataException extends Exception{
 
     public BadMadLibDataException(String message)
     {
-      super(ANSI_RED + message + ANSI_RESET);
+      //super(ANSI_RED + message + ANSI_RESET);
+    	super(message);
     }
 }

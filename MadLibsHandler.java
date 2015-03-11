@@ -34,6 +34,7 @@ public class MadLibsHandler implements Runnable {
 	@Override
 	public void run() {
 		long id = Thread.currentThread().getId();
+		System.out.printf("Thread[%d]: client joined (ip%s)\n", id, remote_socket.getRemoteSocketAddress().toString());
 
 		int disconnect_status = -1;
 		int mode;
@@ -52,8 +53,6 @@ public class MadLibsHandler implements Runnable {
 					beginReadMode();
 					break;
 				default:
-					String error = "Thread-["+id+"]: Error switching modes";
-					throw new Exception(error);
 				}
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getClass().toString());
@@ -67,7 +66,7 @@ public class MadLibsHandler implements Runnable {
 
 		// Print disconnect status before closing the thread
 		if (disconnect_status == 0) {
-			System.out.printf("Thread[%d]: Disconnected gracefully", id);
+			System.out.printf("Thread[%d]: Disconnected gracefully\n", id);
 		} else {
 			System.out.printf("Thread[%d]: Disconnected due to IOException\n",id);
 		}
@@ -78,15 +77,9 @@ public class MadLibsHandler implements Runnable {
 		// Declare variables used to store client communications
 		int client_input = 1;
 
-		/*
-		 * Dan, the connection with the client starts here! Pay special
-		 * attention to the order in which the server writes/reads to the client
-		 * socket
-		 */
-
-		while ( (client_input >= 0) &&  (client_input < 4)) {
+		while ( true /*(client_input >= 0) &&  (client_input < 4)*/ ) {
 			// Write the game mode options to the remote socket
-			sendString("Choose mode:\n\t1 - Play\n\t2 - Create\n\t3 - Read\n\t0 - Disconnect");
+			sendString("Choose mode:\n\t1 - Play\n\t2 - Create\n\t3 - Read\n\t0 - Disconnect\n > (int) ");
 
 			// Read int from client
 			client_input = receiveInt();
@@ -95,37 +88,37 @@ public class MadLibsHandler implements Runnable {
 			switch (client_input) {
 			case (1):
 				sendInt(0);
-				sendString("You are in \"Play\" mode.");
+				sendString("MadLibsServer: You are in \"Play\" mode.\n");
 				return client_input;
 			case (2):
 				sendInt(0);
-				sendString("You are in \"Create\" mode.");
+				sendString("MadLibsServer: You are in \"Create\" mode.\n");
 				return client_input;
 			case (3):
 				sendInt(0);
-				sendString("You are in \"Read\" mode.");
+				sendString("MadLibsServer: You are in \"Read\" mode.\n");
 				return client_input;
 			case (0):
 				sendInt(0);
-				sendString("Disconnecting...");
 				return client_input;
 			default:
 				sendInt(1);
-				sendString("There is no option available for that input");
-				return -1;
+				sendString("MadLibsServer: There is no option available for that input\n");
 			}
 		}
-		return -1;
 	}
 
 	/**
 	 * Begins running "play" mode
 	 */
 	private int beginPlayMode() {
-		MadLib madt = MadLibSet.giveRandom();
-		String full = madt.play(this);
-		sendString(full);
-		MadLibSet.addCompleted(madt, full);
+		//sendString(MadLibSet.giveRandom().play());
+		sendString("MadLibsServer: Exiting mode...\n");
+
+		//MadLib madt = MadLibSet.giveRandom();
+		//String full = madt.play(this);
+		//sendString(full);
+		//MadLibSet.addCompleted(madt, full);
 		return 0;
 	}
 
@@ -133,19 +126,23 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "create" mode
 	 */
 	private int beginCreateMode() {
-
-
-			sendString("Lets make a mad lib");
-			sendString("Use %word% to show which words are the madlibs");
-		try{
-			MadLibSet.add(new MadLib(receiveString()));
-			sendString("THANKS!");
-
-		} catch(BadMadLibDataException ex){
-			sendString(ex.getMessage());
-		}
-
-		sendString("Exiting mode...");
+		// sendString("Use %word% to show which words are the madlibs");
+		String message = "";
+		do {
+			//System.out.println("Server: Top of loop");
+			sendString("MadLibsServer: Enter a new MadLib below (or just return to exit):\n > (String) ");
+			message = receiveString();
+			if ( !message.equals("") ) {
+				try{
+					MadLibSet.add(new MadLib(message));
+					MadLibSet.saveAll();
+					sendString("MadLibsServer: Thanks! Your MadLib has been saved.\n");
+				} catch (BadMadLibDataException ex) {
+					sendString("MadLibsServer: "+ex.getMessage()+"\n");
+				}
+			}
+		} while ( !(message.equals("")) );
+		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
 	}
 
@@ -155,7 +152,7 @@ public class MadLibsHandler implements Runnable {
 	private int beginReadMode() {
 		System.out.println("MODE NOT YET IMPLEMENTED");
 		System.out.println("Exiting mode...");
-		sendString("Exiting mode...");
+		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
 	}
 
@@ -163,7 +160,7 @@ public class MadLibsHandler implements Runnable {
 	 * Disconnects the client from the server, and cleans up
 	 */
 	private void disconnect() {
-		sendString("Disconnecting...");
+		sendString("MadLibsServer: Disconnecting...\n");
 	}
 
 	/**

@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class MadLibSet {
@@ -29,7 +36,6 @@ public class MadLibSet {
 			fil.put(ent, new ArrayList<String>());
 		fil.get(ent).add(s);
 	}
-
 	//NOT AT ALL HOW YOU WOULD DO IT
 	// public static Sting giveRandomComp(){
 	// 	ArrayList<String> strings = new ArrayList<>(fil.values());
@@ -54,6 +60,53 @@ public class MadLibSet {
 			System.out.println("+--------------------+");
 		}
 	}
+	
+	public static boolean saveAll() {
+		try {
+			PrintWriter printWriter = new PrintWriter("MadLibs.txt", "UTF-8");
+			
+			Set<String> keySet = mad.keySet();
+			for (String key : keySet) {
+				printWriter.println( key+" : "+(mad.get(key)) );
+			}
+			printWriter.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean loadAll() {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader("MadLibs.txt"));
+			Scanner parser;
+			String line;
+			String key;
+			String raw;
+			while ( (line = reader.readLine()) != null) {
+				parser = new Scanner(line);
+				parser.useDelimiter(" : ");
+				key = parser.next();
+				raw = parser.next();
+				//System.out.printf("key: %s, raw: %s\n", key, raw);
+				MadLib temp = new MadLib(raw);
+				MadLibSet.add(key, temp);
+				parser.close();
+				units++;
+			}
+			
+			reader.close();
+			return true;
+		} catch (FileNotFoundException e) {
+			MadLibSet.saveAll();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (BadMadLibDataException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 	public static void main(String[] args) {
 		MadLib a, b, c;
@@ -68,9 +121,6 @@ public class MadLibSet {
 		} catch (BadMadLibDataException e) {
 			e.printStackTrace();
 		}
-
-
-
-
+		
 	}
 }

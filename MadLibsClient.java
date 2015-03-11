@@ -81,7 +81,6 @@ public class MadLibsClient {
 		}
 
 		// Disconnect from the server
-
 		client.disconnect();
 
 	}
@@ -90,18 +89,17 @@ public class MadLibsClient {
 	 * Gets an integer from the client. This integer is sent to the server to choose a game mode.
 	 * If the mode does not exist on the server (wrong int), then the client will ask the user to
 	 * enter a different int.
-	 * @param sc:Scanner - scanner used to interact with the client
 	 * @return int
 	 */
 	private int chooseMode() {
 		int mode_int = 1;
-		int check = 0;
+		int check = 1;
 		String message;
 
-		while ( check == 0 ) { // While the client hasn't chosen the disconnect option
+		while ( check == 1 ) { // While the client hasn't chosen the disconnect option
 			// Get message (game mode options) from server and print to screen
 			message = receiveString();
-			System.out.println(message);
+			System.out.print(message);
 
 			// Get int from the user (mode choice)
 			mode_int = getInt();
@@ -113,8 +111,8 @@ public class MadLibsClient {
 				//	     If a bad argument is sent, then "check" (an int read from the server) will not be 0
 
 				// Get message (game mode confirmation) from server and print to screen
-				message = receiveString();
-				System.out.println(message);
+				if (mode_int != 0)
+					System.out.print(receiveString());
 
 				// Return chosen mode to the main loop
 				return mode_int;
@@ -122,7 +120,7 @@ public class MadLibsClient {
 			} else {
 				// Get message ("that mode doesn't exist") from the server and print to screen
 				message = receiveString();
-				System.out.println(message);
+				System.out.print(message);
 			}
 		}
 		// Not supposed to get here
@@ -133,28 +131,33 @@ public class MadLibsClient {
 	 * Begins running "play" mode
 	 */
 	private void beginPlayMode () {
-		String message;
-		int i = receiveInt();
-		for(int c = 0; c < i; c++){
-			System.out.print(receiveString());
-			sendString(getLine());
-		}
+
+		//String message;
+		//int i = receiveInt();
+		//for(int c = 0; c < i; c++){
+		//	System.out.print(receiveString());
+		//	sendString(getLine());
+		//}
 		// Get message (exiting mode confirmation) from server and print to screen
-		message = receiveString();
-		System.out.println(message);
+		System.out.print(receiveString());
 	}
 
 	/**
 	 * Begins running "create" mode
 	 */
 	private void beginCreateMode () {
-		System.out.println(receiveString());
-		System.out.println(receiveString());
-		// String s = getLine();
-		sendString(getLine());
-		System.out.println(receiveString());
+		String s;
+		do {
+			//System.out.println("Client: Top of loop");
+			System.out.print(receiveString());
+			s = getLine();
+			sendString(s);
+			if ( !s.equals("") )
+				System.out.print(receiveString());
+		} while (!s.equals(""));
+
 		// Get message (exiting mode confirmation) from server and print to screen
-		System.out.println(receiveString());
+		System.out.print(receiveString());
 	}
 
 	/**
@@ -165,19 +168,15 @@ public class MadLibsClient {
 
 		// Get message (exiting mode confirmation) from server and print to screen
 		message = receiveString();
-		System.out.println(message);
+		System.out.print(message);
 	}
 
 	/**
 	 * Disconnects the server from the client, and cleans up
 	 */
 	private void disconnect() {
-		String message;
-		// sc.close();
-
-		// Get message (exiting mode confirmation) from server and print to screen
-		message = receiveString();
-		System.out.println(message);
+		// Get message (disconnect) from server and print to screen
+		System.out.print(receiveString());
 	}
 
 	/**
@@ -247,15 +246,22 @@ public class MadLibsClient {
 	}
 
 	private String getLine() {
-		// System.out.println("Does the scanner have next line? "+sc.hasNextLine());
 		String inp = sc.nextLine();
-		// System.out.println("inp: "+ inp);
-		// System.out.println("line 253, did we wait for user input?");
 		return inp;
 	}
 
 	private int getInt() {
-		int i = Integer.valueOf(getLine());
-		return i;
+		Integer i = null;
+		String line;
+		while (i == null) {
+			line = getLine();
+			try {
+				i = Integer.valueOf(line);
+			} catch (NumberFormatException e) {
+				System.out.println("MadLibsClient: Can't parse\""+line+"\" to integer");
+				System.out.print(" > (int) ");
+			}
+		}
+		return i.intValue();
 	}
 }
