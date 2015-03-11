@@ -1,13 +1,12 @@
 //JAVA IS A LANGUAGE PEOPLE USE AT TIME
 
 import java.util.*;
-import java.io.*;
-import java.net.*;
 
 public class MadLib {
 
-	ArrayList<String> wordsArray;
-	ArrayList<Boolean> boolArray;
+	private ArrayList<String> wordsArray;
+	private ArrayList<Boolean> boolArray;
+	private String entered;
 	short rating;
 
 
@@ -45,20 +44,22 @@ public class MadLib {
 	public MadLib(String entered) throws BadMadLibDataException{
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
+		this.entered = entered;
 		if(!entered.contains("%"))
-			throw new BadMadLibDataException("i hate you...");
+			throw new BadMadLibDataException("Formatting error");
 
 		recurseMadLib(entered, false);
 	}
+	
 	private void recurseMadLib(String ent, Boolean flip) throws BadMadLibDataException{
 		if(ent.substring(0, ent.indexOf("%")).length() == 0 && flip)
-			throw new BadMadLibDataException("A blank word is an empty string, can't do that.");
+			throw new BadMadLibDataException("Blank must have a type");
 		wordsArray.add(ent.substring(0, ent.indexOf("%")));
 		boolArray.add(flip);
 		if(ent.substring(ent.indexOf("%")+1).contains("%"))
 			recurseMadLib(ent.substring(ent.indexOf("%")+1), !flip);
 		else if(!flip)
-				throw new BadMadLibDataException("You are missing a % somewhwere.");
+				throw new BadMadLibDataException("Formatting error");
 				else{
 					boolArray.add(false);
 					wordsArray.add(ent.substring(ent.indexOf("%")+1));
@@ -73,20 +74,20 @@ public class MadLib {
 		System.out.println(play());
 	}
 
-	public String play(MadLibsHandler handler){
-		return playRec(handler, new StringBuilder(), 0);
-	}
-
-	public String playRec(MadLibsHandler handler, StringBuilder s, int n){
-		if(boolArray.get(n)){
-			handler.sendString("Please enter a "+ wordsArray.get(n) + ":  ");
-			s.append(handler.receiveString());
-		} else
-			s.append(wordsArray.get(n));
-		if(n < wordsArray.size())
-			return playRec(handler, s, n++);
-		return s.toString();
-	}
+//	public String play(MadLibsHandler handler){
+//		return playRec(handler, new StringBuilder(), 0);
+//	}
+//
+//	public String playRec(MadLibsHandler handler, StringBuilder s, int n){
+//		if(boolArray.get(n)){
+//			handler.sendString("Please enter a "+ wordsArray.get(n) + ":  ");
+//			s.append(handler.receiveString());
+//		} else
+//			s.append(wordsArray.get(n));
+//		if(n < wordsArray.size())
+//			return playRec(handler, s, n++);
+//		return s.toString();
+//	}
 
 
 	public String play() {
@@ -106,6 +107,11 @@ public class MadLib {
 		}
 		sc.close();
 		return temp.toString();
+	}
+	
+	@Override
+	public String toString() {
+		return this.entered;
 	}
 
 	public static void main(String[] args) {

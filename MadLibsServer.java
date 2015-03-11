@@ -33,9 +33,14 @@ public class MadLibsServer {
 
 			// Declare variables to be used in server loop
 			Socket remote_socket;
-			Thread[] handlers = new Thread[max_clients]; // Array of
-															// MadLibsHandler
-															// threads
+			Thread[] handlers = new Thread[max_clients]; // Array of MadLibsHandler threads
+			
+			if (MadLibSet.loadAll()) {
+				System.out.println("MadLibsServer: MadLibSet loaded from \"MadLibs.txt\"...");
+				MadLibSet.printList();
+			} else {
+				System.out.println("MadLibsServer: MadLibSet is empty");
+			}
 
 			while (true) { // WE NEVER STOP SERVING QUALITY MADLIBS
 				remote_socket = server_socket.accept();
