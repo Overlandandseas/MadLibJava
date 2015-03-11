@@ -131,6 +131,13 @@ public class MadLibsClient {
 	 * Begins running "play" mode
 	 */
 	private void beginPlayMode () {
+
+		//String message;
+		//int i = receiveInt();
+		//for(int c = 0; c < i; c++){
+		//	System.out.print(receiveString());
+		//	sendString(getLine());
+		//}
 		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.print(receiveString());
 	}

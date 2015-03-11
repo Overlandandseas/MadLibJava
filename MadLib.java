@@ -16,31 +16,6 @@ public class MadLib {
 	}
 
 	// constructor
-	/*
-	public MadLib(String entered) throws BadMadLibDataException{
-		wordsArray = new ArrayList<>();
-		boolArray = new ArrayList<>();
-		int count = 0;
-		Boolean flip = false;
-		System.out.println(entered.length());
-		for (int c = 0; c < entered.length(); c++) {
-			if (entered.charAt(c) == '%'|| c == entered.length()) {
-				wordsArray.add(entered.substring(count, c));
-				boolArray.add(flip);
-				if(entered.charAt(c) == '%')
-					flip = !flip;
-				System.out.println("C is " + c + ". And count is " + count + ".");
-				System.out.println("Flip is " + flip);
-				count = flip ? c : c + 1;
-				if(count == c && !flip)
-					throw new BadMadLibDataException("A blank space is 0 chars long! Can't do that.");
-				//if(c != entered.length()-1)
-				if(count == entered.length()-1 && flip)
-					throw new BadMadLibDataException("You are missing a % somewhwere.");
-			}
-		}
-	}*/
-
 	public MadLib(String entered) throws BadMadLibDataException{
 		wordsArray = new ArrayList<>();
 		boolArray = new ArrayList<>();
@@ -49,6 +24,7 @@ public class MadLib {
 			throw new BadMadLibDataException("Formatting error");
 
 		recurseMadLib(entered, false);
+		intify();
 	}
 	
 	private void recurseMadLib(String ent, Boolean flip) throws BadMadLibDataException{
@@ -67,9 +43,18 @@ public class MadLib {
 				}
 	}
 
+	private int intify(){
+		int i = 0;
+		for(boolean b : boolArray)
+			if(b)
+				i++;
+		return i;
+	}
 	public void playNstore(){
 		MadLibSet.addCompleted(this, play());
 	}
+
+
 	public void playNprint() {
 		System.out.println(play());
 	}
@@ -116,10 +101,10 @@ public class MadLib {
 
 	public static void main(String[] args) {
 		try{
-		MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
-
+			// MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
 			//  MadLib b = new MadLib("Right %DOES% %THIS% %BREAK% %ANYTHING?% lLl this is after here");
 			//                      0123456789012345678901234567890123
+			MadLib b = new MadLib("Hey %name%, I like your %body part%. Like a lot.");
 			b.playNprint();
 		} catch(BadMadLibDataException ex){
 			ex.printStackTrace();

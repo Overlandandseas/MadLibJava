@@ -114,6 +114,11 @@ public class MadLibsHandler implements Runnable {
 	private int beginPlayMode() {
 		//sendString(MadLibSet.giveRandom().play());
 		sendString("MadLibsServer: Exiting mode...\n");
+
+		//MadLib madt = MadLibSet.giveRandom();
+		//String full = madt.play(this);
+		//sendString(full);
+		//MadLibSet.addCompleted(madt, full);
 		return 0;
 	}
 
