@@ -1,7 +1,10 @@
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class MadLibsServer {
+	static HashMap<InetAddress,String> users = new HashMap<InetAddress,String>();
 
 	public static void main(String[] args) {
 
@@ -44,7 +47,7 @@ public class MadLibsServer {
 
 			while (true) { // WE NEVER STOP SERVING QUALITY MADLIBS
 				remote_socket = server_socket.accept();
-				MadLibsHandler mlh = new MadLibsHandler(remote_socket);
+				MadLibsHandler mlh = new MadLibsHandler(remote_socket, users);
 				Thread handler_thread = new Thread(mlh);
 				if (!insert_thread(handler_thread, handlers)) {
 					System.out.println("Reached maximum number of threads");

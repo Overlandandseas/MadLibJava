@@ -3,10 +3,11 @@ import java.net.*;
 import java.util.Scanner;
 
 public class MadLibsClient {
-	DataOutputStream output;
-	DataInputStream input;
-	Socket server_socket;
-	Scanner sc;
+	private DataOutputStream output;
+	private DataInputStream input;
+	private Socket server_socket;
+	private Scanner sc;
+	private String user_name;
 
 	/**
 	 * Constructor
@@ -18,6 +19,7 @@ public class MadLibsClient {
 			this.input = new DataInputStream(server_socket.getInputStream());
 			this.output = new DataOutputStream(server_socket.getOutputStream());
 			this.sc = new Scanner(System.in);
+			
 		} catch (IOException e) {
 			System.out.println("Exception: " + e.getClass().toString());
 			System.out.println("\t" + e.getMessage());
@@ -47,6 +49,10 @@ public class MadLibsClient {
 
 		// Create new MadLibClient
 		MadLibsClient client = new MadLibsClient(hostName, portNumber);
+		
+		System.out.print("MadLibsClient: What is your name?\n > (String) ");
+		client.user_name = client.getLine();
+		client.sendString(client.user_name);
 
 		// Declare variables used for choosing mode
 		int mode;
@@ -131,13 +137,36 @@ public class MadLibsClient {
 	 * Begins running "play" mode
 	 */
 	private void beginPlayMode () {
-
-		//String message;
-		//int i = receiveInt();
-		//for(int c = 0; c < i; c++){
-		//	System.out.print(receiveString());
-		//	sendString(getLine());
-		//}
+		String line;
+		int check = 0;
+		System.out.print(receiveString());
+		do {
+			System.out.print(receiveString());
+			line = getLine();
+			sendString(line);
+			if (line.equals(""))
+				break;
+			check = receiveInt();
+			//System.out.println("Check: "+check);
+			System.out.print(receiveString());
+			
+			if (check == 0)
+				continue;
+			
+			System.out.print(receiveString());
+			for (int i=0; i<check; i++) {
+				System.out.print(receiveString());
+				line = getLine();
+				//System.out.println();
+				sendString(line);
+			}
+			// Read the fininished MadLib
+			System.out.print(receiveString());
+			getLine();
+			sendInt(0);
+			
+		} while ( !line.equals("") || (check == 0) );
+		
 		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.print(receiveString());
 	}

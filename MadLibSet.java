@@ -7,7 +7,7 @@ import java.util.*;
 
 public class MadLibSet {
 	private static HashMap<String, MadLib> mad = new HashMap<>();
-	private static HashMap<MadLib, ArrayList<String>> fil = new HashMap<>();
+	private static LinkedList<CompletedMadLib> completed = new LinkedList<>();
 	private static int units = 0;
 
 	// YAY FOR HASHMAPS
@@ -16,23 +16,36 @@ public class MadLibSet {
 	public static Boolean add(String key, MadLib ent) {
 		// This returns a Bool if the add was successful for now.
 		// Later this should throw an exception.
-		if (mad.containsKey(key)) {
+		if (key == null) {
+			units++;
+			ent.setTitle("Untitled_" + units);
+		} else {
+			ent.setTitle(key);
+		}
+		if (mad.containsKey(ent.getTitle())) {
 			System.out.println("Key already exists.");
 			return false;
 		} else {
-			mad.put(key, ent);
+			mad.put(ent.getTitle(), ent);
 			return true;
 		}
 	}
-
-	public static Boolean add(MadLib end) {
-		return add("Untitled_" + units++, end);
+	
+	public static MadLib getPlayable(String key) {
+		MadLib mlib = mad.get(key);
+		if (mlib != null) {
+			try {
+				mlib = new MadLib(mlib.getTitle(), mlib.toString());
+				return mlib;
+			} catch (BadMadLibDataException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
-	public static void addCompleted(MadLib ent, String s){
-		if(fil.get(ent) == null)
-			fil.put(ent, new ArrayList<String>());
-		fil.get(ent).add(s);
+	public static void addCompleted(MadLib complete, String user_name){
+		completed.addFirst(new CompletedMadLib(complete, user_name));
 	}
 	//NOT AT ALL HOW YOU WOULD DO IT
 	// public static Sting giveRandomComp(){
@@ -45,18 +58,24 @@ public class MadLibSet {
 	}
 
 	public static void printList(){
-		System.out.println("+--------------------+");
+		System.out.println(MadLibSet.getList());
+	}
+	
+	public static String getList() {
+		String list = "";
+		list = list.concat("+--------------------+\n");
 		for(String s : mad.keySet()){
 			if(s.length() > 18)
-				System.out.println("| " + s.substring(0, 15) + "... |");
-			else{
-				System.out.print("| " + s);
+				list = list.concat("| " + s.substring(0, 15) + "... |\n");
+			else {
+				list = list.concat("| " + s);
 				for(int c = 0; c < 19 - s.length(); c++)
-					System.out.print(" ");
-				System.out.println("|");
+					list = list.concat(" ");
+				list = list.concat("|\n");
 			}
 		}
-		System.out.println("+--------------------+");
+		list = list.concat("+--------------------+\n");
+		return list;
 	}
 	
 	public static boolean saveAll() {
@@ -89,9 +108,9 @@ public class MadLibSet {
 				raw = parser.next();
 				//System.out.printf("key: %s, raw: %s\n", key, raw);
 				MadLib temp = new MadLib(raw);
+				temp.setTitle(key);
 				MadLibSet.add(key, temp);
 				parser.close();
-				units++;
 			}
 			
 			reader.close();

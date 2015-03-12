@@ -6,8 +6,15 @@ public class MadLib {
 
 	private ArrayList<String> wordsArray;
 	private ArrayList<Boolean> boolArray;
+	private String title;
 	private String entered;
+	private boolean filled;
+	private String playResult;
 	short rating;
+	private int numBlanks;
+	
+	private int index = 0;
+	private StringBuilder stringBuilder;
 
 
 	// default constructor
@@ -16,40 +23,60 @@ public class MadLib {
 	}
 
 	// constructor
-	public MadLib(String entered) throws BadMadLibDataException{
-		wordsArray = new ArrayList<>();
-		boolArray = new ArrayList<>();
+	public MadLib(String title, String entered) throws BadMadLibDataException{
+		this.wordsArray = new ArrayList<>();
+		this.boolArray = new ArrayList<>();
 		this.entered = entered;
+		this.filled = false;
+		this.title = title;
+		stringBuilder = new StringBuilder();
+		
 		if(!entered.contains("%"))
 			throw new BadMadLibDataException("Formatting error");
-
+		
 		recurseMadLib(entered, false);
-		intify();
+		//intify();
+	}
+	
+	public MadLib(String entered) throws BadMadLibDataException {
+		this.wordsArray = new ArrayList<>();
+		this.boolArray = new ArrayList<>();
+		this.entered = entered;
+		this.filled = false;
+		this.title = null;
+		stringBuilder = new StringBuilder();
+		
+		if(!entered.contains("%"))
+			throw new BadMadLibDataException("Formatting error");
+		
+		recurseMadLib(entered, false);
+		//intify();
 	}
 	
 	private void recurseMadLib(String ent, Boolean flip) throws BadMadLibDataException{
 		if(ent.substring(0, ent.indexOf("%")).length() == 0 && flip)
 			throw new BadMadLibDataException("Blank must have a type");
+		
 		wordsArray.add(ent.substring(0, ent.indexOf("%")));
 		boolArray.add(flip);
+		if (flip)
+			numBlanks++;
+		
 		if(ent.substring(ent.indexOf("%")+1).contains("%"))
 			recurseMadLib(ent.substring(ent.indexOf("%")+1), !flip);
 		else if(!flip)
-				throw new BadMadLibDataException("Formatting error");
-				else{
-					boolArray.add(false);
-					wordsArray.add(ent.substring(ent.indexOf("%")+1));
-					// recurseMadLib(ent.substring(ent.indexOf("%")+1), false);
-				}
+			throw new BadMadLibDataException("Formatting error");
+		else{
+			boolArray.add(false);
+			wordsArray.add(ent.substring(ent.indexOf("%")+1));
+			// recurseMadLib(ent.substring(ent.indexOf("%")+1), false);
+		}
 	}
 
-	private int intify(){
-		int i = 0;
-		for(boolean b : boolArray)
-			if(b)
-				i++;
-		return i;
+	public int getNumBlanks(){
+		return numBlanks;
 	}
+	
 	public void playNstore(){
 		MadLibSet.addCompleted(this, play());
 	}
@@ -57,6 +84,12 @@ public class MadLib {
 
 	public void playNprint() {
 		System.out.println(play());
+	}
+	
+	public String getFilledMadlib() {
+		if (this.filled)
+			return this.stringBuilder.toString();
+		return null;
 	}
 
 //	public String play(MadLibsHandler handler){
@@ -91,14 +124,71 @@ public class MadLib {
 
 		}
 		sc.close();
-		return temp.toString();
+		this.playResult = temp.toString();
+		this.filled = true;
+		return this.playResult;
 	}
 	
 	@Override
 	public String toString() {
 		return this.entered;
 	}
-
+	
+	public boolean hasNextBlank() {
+		int begin = index;
+		while ( index < boolArray.size() ) {
+			if (boolArray.get(index)) {
+				index = begin;
+				return true;
+			}
+		}
+		index = begin;
+		return false;
+	}
+	
+	public String getNextBlank() {
+		while ( (index < wordsArray.size()) && !(boolArray.get(index)) ) {
+			//System.out.println("index: "+index+", arraysize: " + wordsArray.size());
+			stringBuilder.append(wordsArray.get(index));
+			index++;
+		}
+		
+		// Reached the end of the MadLib, return null
+		if (index >= wordsArray.size()) {
+			this.filled = true;
+			this.playResult = this.stringBuilder.toString();
+			return null;
+		}
+		
+		// Return word at current index
+		return wordsArray.get(index);
+	}
+	
+	public void fillNextBlank(String filledBlank) {
+		stringBuilder.append(filledBlank);
+		index++;
+		
+		// Reached the end of the MadLib
+		/*
+		if ( !this.hasNextBlank() ) {
+			this.filled = true;
+			this.playResult = this.stringBuilder.toString();
+		}
+		*/
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public String getTitle() {
+		return this.title;
+	}
+	
+	public boolean isFilled () {
+		return this.filled;
+	}
+	
 	public static void main(String[] args) {
 		try{
 			// MadLib b = new MadLib("I don't think that% the %noun% in the future to our %emotion% and we should probably invest more time in the %noun% before %pronoun% die.");
