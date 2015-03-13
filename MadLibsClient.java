@@ -226,9 +226,18 @@ public class MadLibsClient {
 	/**
 	 * Disconnects the server from the client, and cleans up
 	 */
-	private void disconnect() {
+	private void disconnect(boolean causedByException) {
 		// Get message (disconnect) from server and print to screen
-		System.out.print(receiveString());
+		if (!causedByException) {
+			System.out.print(receiveString());
+			System.exit(0);
+		} else {
+			System.out.println("Disconnecting...");
+			System.exit(1);
+		}
+	}
+	private void disconnect() {
+		disconnect(false);
 	}
 
 	/**
@@ -242,8 +251,8 @@ public class MadLibsClient {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getClass().toString());
-			System.out.println("\t" + e.getMessage());
+			System.out.println("Connection lost");
+			disconnect(true);
 			return 1;
 		}
 	}
@@ -259,8 +268,8 @@ public class MadLibsClient {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getClass().toString());
-			System.out.println("\t" + e.getMessage());
+			System.out.println("Connection lost");
+			disconnect(true);
 			return 1;
 		}
 	}
@@ -275,8 +284,8 @@ public class MadLibsClient {
 			int i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getClass().toString());
-			System.out.println("\t" + e.getMessage());
+			System.out.println("Connection lost");
+			disconnect(true);
 			return null;
 		}
 	}
@@ -291,8 +300,8 @@ public class MadLibsClient {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getClass().toString());
-			System.out.println("\t" + e.getMessage());
+			System.out.println("Connection lost");
+			disconnect(true);
 			return null;
 		}
 	}

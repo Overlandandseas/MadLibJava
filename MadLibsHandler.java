@@ -16,6 +16,7 @@ public class MadLibsHandler implements Runnable {
 	 Socket remote_socket;
 	 String connected_user_name;
 	 HashMap<InetAddress, String> users;
+	 long id;
 	 
 	/**
 	 * Constructor
@@ -40,15 +41,17 @@ public class MadLibsHandler implements Runnable {
 
 	@Override
 	public void run() {
-		long id = Thread.currentThread().getId();
+		id = Thread.currentThread().getId();
 		
 		// Logging user connection
 		connected_user_name = receiveString();
 		if (users.get(remote_socket.getInetAddress()) == null)
 			users.put(remote_socket.getInetAddress(), connected_user_name);
-		System.out.printf("Thread[%d]: %s joined (ip%s)\n", id, connected_user_name, remote_socket.getInetAddress().toString());
+		System.out.printf("Thread[%d]: %s joined (ip%s)\n",
+				id,
+				connected_user_name,
+				remote_socket.getInetAddress().toString() );
 
-		int disconnect_status = -1;
 		int mode;
 
 		mode = chooseMode();
@@ -73,14 +76,6 @@ public class MadLibsHandler implements Runnable {
 		}
 
 		disconnect();
-		disconnect_status = 0;
-
-		// Print disconnect status before closing the thread
-		if (disconnect_status == 0) {
-			System.out.printf("Thread[%d]: Disconnected gracefully\n", id);
-		} else {
-			System.out.printf("Thread[%d]: Disconnected due to IOException\n",id);
-		}
 
 	}
 
@@ -211,8 +206,19 @@ public class MadLibsHandler implements Runnable {
 	/**
 	 * Disconnects the client from the server, and cleans up
 	 */
+	private void disconnect(Exception e) {
+		// Get message (disconnect) from server and print to screen
+		if (e == null) {
+			System.out.print(receiveString());
+			System.out.printf("Thread[%d]: %s disconnected gracefully\n", id, connected_user_name);
+			System.exit(0);
+		} else {
+			System.out.printf("Thread[%d]: %s lost connection\n", id, connected_user_name);
+			System.exit(1);
+		}
+	}
 	private void disconnect() {
-		sendString("MadLibsServer: Disconnecting...\n");
+		disconnect(null);
 	}
 
 	/**
@@ -226,7 +232,8 @@ public class MadLibsHandler implements Runnable {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Connection lost");
+			disconnect(e);
 			return 1;
 		}
 	}
@@ -242,7 +249,8 @@ public class MadLibsHandler implements Runnable {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Connection lost");
+			disconnect(e);
 			return 1;
 		}
 	}
@@ -257,7 +265,8 @@ public class MadLibsHandler implements Runnable {
 			int i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Connection lost");
+			disconnect(e);
 			return null;
 		}
 	}
@@ -272,15 +281,15 @@ public class MadLibsHandler implements Runnable {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Connection lost");
+			disconnect(e);
 			return null;
 		}
 	}
 
 	public void main(String[] args) {
 		// Usage
-		System.out
-				.println("This class is meant to be used by a MadLibsServer object");
+		System.out.println("This class is meant to be used by a MadLibsServer object");
 		return;
 	}
 }

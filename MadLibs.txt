@@ -1,0 +1,2 @@
+Cat : The %adj% cat loves to fish for %noun%.
+Cow : The %animal% %verb% over the %planet%.
