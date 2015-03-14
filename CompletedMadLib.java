@@ -3,69 +3,112 @@ import java.util.Calendar;
 
 public class CompletedMadLib {
 	private String user;
-	private MadLib madLib;
+	private String completedMadLib;
+	private String completedMadLibTitle;
 	private String date;
 	
-	private String month;
-	private String day;
-	private String year;
-	private String hour;
-	private String min;
-	private String am_pm;
+	private int[] dateArray;
+	// {Month, Day, Year, Hour, Minute, AM/PM}
 	
 	CompletedMadLib (MadLib madLib, String user) {
-		this.madLib = madLib;
+		this.completedMadLib = madLib.getFilledMadlib();
+		this.completedMadLibTitle = madLib.getTitle();
 		this.user = user;
 		
 		Calendar c = Calendar.getInstance();
-		month = Integer.toString(c.get(Calendar.MONTH));
-		day = Integer.toString(c.get(Calendar.DAY_OF_MONTH));
-		year = Integer.toString(c.get(Calendar.YEAR));
-		hour = Integer.toString(c.get(Calendar.HOUR));
-		min = Integer.toString(c.get(Calendar.MINUTE));
-		am_pm = "AM";
-		if (c.get(Calendar.AM_PM) == 1) {
-			am_pm = "PM";
+		dateArray = new int[6];
+		date = "";
+		
+		dateArray[0] = c.get(Calendar.MONTH);
+		date = date.concat(Integer.toString(dateArray[0]));
+		dateArray[1] = c.get(Calendar.DAY_OF_MONTH);
+		date = date.concat("/"+Integer.toString(dateArray[1]));
+		dateArray[2] = c.get(Calendar.YEAR);
+		date = date.concat("/"+Integer.toString(dateArray[2]));
+		dateArray[3] = c.get(Calendar.HOUR);
+		if (dateArray[3] == 0)
+			date = date.concat(" (12:");
+		else
+			date = date.concat(" ("+Integer.toString(dateArray[3])+":");
+		dateArray[4] = c.get(Calendar.MINUTE);
+		if (dateArray[4] < 10)
+			date = date.concat("0");
+		date = date.concat(Integer.toString(dateArray[4]));
+		dateArray[5] = c.get(Calendar.AM_PM);
+		if (dateArray[5] == 0) {
+			date = date.concat(" AM)");
+		} else {
+			date = date.concat(" PM)");
 		}
-		date = month+"/"+day+"/"+year+"("+hour+":"+min+am_pm+")";
 	}
 	
+	CompletedMadLib () {
+		
+	}
+	
+
+	@Override
+	public String toString() {
+		return user+", \""+completedMadLibTitle+"\", "+date;
+	}
+
 	public String getUser() {
 		return user;
 	}
 
-	public MadLib getMadLib() {
-		return madLib;
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getCompletedMadLib() {
+		return completedMadLib;
+	}
+
+	public void setCompletedMadLib(String completedMadLib) {
+		this.completedMadLib = completedMadLib;
+	}
+
+	public String getCompletedMadLibTitle() {
+		return completedMadLibTitle;
+	}
+
+	public void setCompletedMadLibTitle(String completedMadLibTitle) {
+		this.completedMadLibTitle = completedMadLibTitle;
 	}
 
 	public String getDate() {
 		return date;
 	}
 
-	public String getMonth() {
-		return month;
+	public void setDate(String date) {
+		this.date = date;
 	}
 
-	public String getDay() {
-		return day;
+	public int[] getDateArray() {
+		return dateArray;
 	}
 
-	public String getYear() {
-		return year;
+	public void setDateArray(int[] dateArray) {
+		this.dateArray = dateArray;
+		date = "";
+		
+		date = date.concat(Integer.toString(dateArray[0]));
+		date = date.concat("/"+Integer.toString(dateArray[1]));
+		date = date.concat("/"+Integer.toString(dateArray[2]));
+		if (dateArray[3] == 0)
+			date = date.concat(" (12:");
+		else
+			date = date.concat(" ("+Integer.toString(dateArray[3])+":");
+		if (dateArray[4] < 10)
+			date = date.concat("0");
+		date = date.concat(Integer.toString(dateArray[4]));
+		if (dateArray[5] == 0) {
+			date = date.concat(" AM)");
+		} else {
+			date = date.concat(" PM)");
+		}
 	}
 
-	public String getHour() {
-		return hour;
-	}
-
-	public String getMin() {
-		return min;
-	}
-
-	public String getAm_pm() {
-		return am_pm;
-	}
 	
-	
-	
+
 }

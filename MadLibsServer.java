@@ -38,11 +38,18 @@ public class MadLibsServer {
 			Socket remote_socket;
 			Thread[] handlers = new Thread[max_clients]; // Array of MadLibsHandler threads
 			
-			if (MadLibSet.loadAll()) {
+			if (MadLibSet.loadMadLibs()) {
 				System.out.println("MadLibsServer: MadLibSet loaded from \"MadLibs.txt\"...");
 				//MadLibSet.printList();
 			} else {
-				System.out.println("MadLibsServer: MadLibSet is empty");
+				System.out.println("MadLibsServer: MadLibSet found no MadLibs");
+			}
+			
+			if (MadLibSet.loadCompleted()) {
+				System.out.println("MadLibsServer: MadLibSet loaded from \"CompletedMadLibs.txt\"...");
+				//MadLibSet.printList();
+			} else {
+				System.out.println("MadLibsServer: MadLibSet found no CompletedMadLibs");
 			}
 
 			while (true) { // WE NEVER STOP SERVING QUALITY MADLIBS

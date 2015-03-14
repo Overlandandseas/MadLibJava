@@ -85,7 +85,15 @@ public class MadLibsHandler implements Runnable {
 
 		while ( true /*(client_input >= 0) &&  (client_input < 4)*/ ) {
 			// Write the game mode options to the remote socket
-			sendString("Choose mode:\n\t1 - Play\n\t2 - Create\n\t3 - Read\n\t0 - Disconnect\n > (int) ");
+			sendString(
+					  "+-------------------+\n"
+					+ "|    Choose Mode    |\n"
+					+ "|    1) Play        |\n"
+					+ "|    2) Create      |\n"
+					+ "|    3) Read        |\n"
+					+ "|    0) Disconnect  |\n"
+					+ "+-------------------+\n"
+					+ "> (int) ");
 
 			// Read int from client
 			client_input = receiveInt();
@@ -109,7 +117,7 @@ public class MadLibsHandler implements Runnable {
 				return client_input;
 			default:
 				sendInt(1);
-				sendString("MadLibsServer: There is no option available for that input\n");
+				sendString("MadLibsServer: "+client_input+" is out-of-bounds.\n");
 			}
 		}
 	}
@@ -122,7 +130,7 @@ public class MadLibsHandler implements Runnable {
 		String filledBlank;
 		MadLib choice = null;
 		String blank = null;
-		sendString(MadLibSet.getList());
+		sendString(MadLibSet.getMadLibList());
 		do {
 			sendString("MadLibsServer: Pick a MadLib to play (or just return to exit):\n > (String) ");
 			title = receiveString();
@@ -145,7 +153,8 @@ public class MadLibsHandler implements Runnable {
 			}
 			sendString("MadLibsServer: Your finished MadLib reads...\n\""+choice.getFilledMadlib()+"\"\n");
 			receiveInt();
-			MadLibSet.addCompleted(choice, connected_user_name);
+			MadLibSet.addCompleted(new CompletedMadLib(choice, connected_user_name));
+			MadLibSet.saveCompleted();
 		} while ( !title.equals("") );
 		
 		sendString("MadLibsServer: Exiting mode...\n");
@@ -179,16 +188,17 @@ public class MadLibsHandler implements Runnable {
 					if (key_in_use) {
 						sendString("MadLibsServer: Sorry, that name is already used! Upload cancelled\n");
 					} else {
-						MadLibSet.saveAll();
+						MadLibSet.saveMadLibs();
 						sendString("MadLibsServer: Your new MadLib has been uploaded!\n");
 					}
 				} catch (BadMadLibDataException ex) {
 					sendInt(1);
-					sendString("MadLibsServer: MadLib formatting error!\n");
+					sendString("MadLibsServer: MadLib formatting error!\n"
+							 + "               eg. \"The %animal% jumped over the %noun%.\"\n");
 				}
 			}
 		} while ( !(ent.equals("")) );
-		MadLibSet.saveAll();
+		MadLibSet.saveMadLibs();
 		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
 	}
@@ -197,8 +207,25 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "read" mode
 	 */
 	private int beginReadMode() {
-		System.out.println("MODE NOT YET IMPLEMENTED");
-		System.out.println("Exiting mode...");
+		int number;
+		String choice = null;
+		sendString(MadLibSet.getCompletedList());
+		do {
+			sendString("MadLibsServer: Pick a MadLib to read (or just return to exit):\n > (int) ");
+			number = receiveInt();
+			if ( number == Integer.MIN_VALUE )
+				break;
+			choice = MadLibSet.getReadable(number);
+			if ( choice != null ) {
+				sendInt(0);
+				sendString("MadLibsServer: The MadLib reads...\n\""+choice+"\"\n");
+			} else {
+				sendInt(1);
+				sendString("MadLibsServer: "+number+" is out-of-bounds.\n");
+				continue;
+			}
+		} while ( !(number == Integer.MIN_VALUE) );
+		
 		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
 	}
@@ -209,14 +236,14 @@ public class MadLibsHandler implements Runnable {
 	private void disconnect(Exception e) {
 		// Get message (disconnect) from server and print to screen
 		if (e == null) {
-			System.out.print(receiveString());
+			sendString("MadLibsServer: Disconnecting...\n");
 			System.out.printf("Thread[%d]: %s disconnected gracefully\n", id, connected_user_name);
-			System.exit(0);
 		} else {
 			System.out.printf("Thread[%d]: %s lost connection\n", id, connected_user_name);
-			System.exit(1);
 		}
+		return;
 	}
+	
 	private void disconnect() {
 		disconnect(null);
 	}
@@ -232,7 +259,6 @@ public class MadLibsHandler implements Runnable {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(e);
 			return 1;
 		}
@@ -249,7 +275,6 @@ public class MadLibsHandler implements Runnable {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(e);
 			return 1;
 		}
@@ -265,7 +290,6 @@ public class MadLibsHandler implements Runnable {
 			int i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(e);
 			return null;
 		}
@@ -281,7 +305,6 @@ public class MadLibsHandler implements Runnable {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(e);
 			return null;
 		}

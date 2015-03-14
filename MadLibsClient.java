@@ -178,7 +178,6 @@ public class MadLibsClient {
 		String madLib;
 		int check = 1;
 		do {
-			//System.out.println("Client: Top of loop");
 			System.out.print(receiveString());
 			madLib = getLine();
 			sendString(madLib);
@@ -197,18 +196,6 @@ public class MadLibsClient {
 			System.out.print(receiveString());
 		} while (!madLib.equals("") || check == 1);
 		
-		/*String name;
-		do {
-			//System.out.println("Client: Top of loop");
-			System.out.print(receiveString());
-			name = getLine();
-			sendString(name);
-			if ( !name.equals("") )
-				System.out.print(receiveString());
-		} while (!name.equals(""));
-		*/
-
-		// Get message (exiting mode confirmation) from server and print to screen
 		System.out.print(receiveString());
 	}
 
@@ -216,11 +203,23 @@ public class MadLibsClient {
 	 * Begins running "read" mode
 	 */
 	private void beginReadMode () {
-		String message;
-
+		int line;
+		int check = 0;
+		System.out.print(receiveString());
+		do {
+			System.out.print(receiveString());
+			line = getInt();
+			sendInt(line);
+			if (line == Integer.MIN_VALUE)
+				break;
+			check = receiveInt();
+			System.out.print(receiveString());
+			if (check == 1)
+				continue;
+		} while ( !(line == Integer.MIN_VALUE) );
+		
 		// Get message (exiting mode confirmation) from server and print to screen
-		message = receiveString();
-		System.out.print(message);
+		System.out.print(receiveString());
 	}
 
 	/**
@@ -230,11 +229,10 @@ public class MadLibsClient {
 		// Get message (disconnect) from server and print to screen
 		if (!causedByException) {
 			System.out.print(receiveString());
-			System.exit(0);
 		} else {
-			System.out.println("Disconnecting...");
-			System.exit(1);
+			System.out.println("Connection lost");
 		}
+		return;
 	}
 	private void disconnect() {
 		disconnect(false);
@@ -251,7 +249,6 @@ public class MadLibsClient {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(true);
 			return 1;
 		}
@@ -268,7 +265,6 @@ public class MadLibsClient {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(true);
 			return 1;
 		}
@@ -284,7 +280,6 @@ public class MadLibsClient {
 			int i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(true);
 			return null;
 		}
@@ -300,7 +295,6 @@ public class MadLibsClient {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			System.out.println("Connection lost");
 			disconnect(true);
 			return null;
 		}
@@ -319,8 +313,12 @@ public class MadLibsClient {
 			try {
 				i = Integer.valueOf(line);
 			} catch (NumberFormatException e) {
-				System.out.println("MadLibsClient: Can't parse\""+line+"\" to integer");
-				System.out.print(" > (int) ");
+				if (line.equals("")) {
+					return Integer.MIN_VALUE;
+				} else {
+					System.out.println("MadLibsClient: Can't parse\" "+line+"\" to integer");
+					System.out.print(" > (int) ");
+				}
 			}
 		}
 		return i.intValue();

@@ -76,11 +76,6 @@ public class MadLib {
 	public int getNumBlanks(){
 		return numBlanks;
 	}
-	
-	public void playNstore(){
-		MadLibSet.addCompleted(this, play());
-	}
-
 
 	public void playNprint() {
 		System.out.println(play());
