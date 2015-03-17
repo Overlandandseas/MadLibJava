@@ -1,10 +1,18 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Set;
 
 public class MadLibsServer {
-	static HashMap<InetAddress,String> users = new HashMap<InetAddress,String>();
+	static HashMap<String,String> users = new HashMap<String,String>();
+	static Thread[] handlers;
 
 	public static void main(String[] args) {
 
@@ -36,34 +44,41 @@ public class MadLibsServer {
 
 			// Declare variables to be used in server loop
 			Socket remote_socket;
-			Thread[] handlers = new Thread[max_clients]; // Array of MadLibsHandler threads
+			handlers = new Thread[max_clients]; // Array of MadLibsHandler threads
+			
+			if (MadLibsServer.loadUsers()) {
+				System.out.println("MadLibsServer: Loaded from \"Users.txt\"...");
+			} else {
+				System.out.println("MadLibsServer: Starting server with blank user log");
+			}
 			
 			if (MadLibSet.loadMadLibs()) {
 				System.out.println("MadLibsServer: MadLibSet loaded from \"MadLibs.txt\"...");
-				//MadLibSet.printList();
 			} else {
 				System.out.println("MadLibsServer: MadLibSet found no MadLibs");
 			}
 			
 			if (MadLibSet.loadCompleted()) {
 				System.out.println("MadLibsServer: MadLibSet loaded from \"CompletedMadLibs.txt\"...");
-				//MadLibSet.printList();
 			} else {
 				System.out.println("MadLibsServer: MadLibSet found no CompletedMadLibs");
 			}
 
 			while (true) { // WE NEVER STOP SERVING QUALITY MADLIBS
 				remote_socket = server_socket.accept();
-				MadLibsHandler mlh = new MadLibsHandler(remote_socket, users);
+				MadLibsHandler mlh = new MadLibsHandler(remote_socket, users, Thread.currentThread());
 				Thread handler_thread = new Thread(mlh);
-				if (!insert_thread(handler_thread, handlers)) {
+				if (!insert_thread(handler_thread)) {
 					System.out.println("Reached maximum number of threads");
-					break;
+					join_finished_threads();
+				} else if (Thread.interrupted()) {
+					MadLibsServer.saveUsers();
+					join_finished_threads();
 				}
 				handler_thread.start();
 			}
 
-			server_socket.close();
+			//server_socket.close();
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getClass().toString());
 			System.out.println("\t" + e.getMessage());
@@ -76,9 +91,9 @@ public class MadLibsServer {
 	 * @param thread_array
 	 * @return if not full, returns next empty index if full, returns -1
 	 */
-	private static int next_empty(Thread[] thread_array) {
-		for (int i = 0; i < thread_array.length; i++) {
-			if (thread_array[i] == null)
+	private static int next_empty() {
+		for (int i = 0; i < handlers.length; i++) {
+			if (handlers[i] == null)
 				return i;
 		}
 		return -1;
@@ -91,13 +106,74 @@ public class MadLibsServer {
 	 * @param thread_array
 	 * @return if successful, returns true else, returns false
 	 */
-	private static boolean insert_thread(Thread thread, Thread[] thread_array) {
-		int next_empty_index = next_empty(thread_array);
+	private static boolean insert_thread(Thread thread) {
+		int next_empty_index = next_empty();
 		if (next_empty_index == -1)
 			return false;
 
 		// Insert thread into array
-		thread_array[next_empty_index] = thread;
+		handlers[next_empty_index] = thread;
 		return true;
+	}
+	
+	private static int join_finished_threads() {
+		int num_threads_joined = 0;
+		for (Thread handler : handlers) {
+			if (handler != null) {
+				if (handler.isInterrupted()) {
+					try {
+						handler.join();
+						num_threads_joined++;
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						System.out.println("MadLibsServer: Server thread interrupted during join");
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		if (num_threads_joined > 0)
+			System.out.println("MadLibsServer: Joined "+num_threads_joined+" finished threads");
+		return num_threads_joined;
+	}
+	
+	public static boolean saveUsers() {
+		try {
+			PrintWriter printWriter = new PrintWriter("Users.txt", "UTF-8");
+			Set<String> keys = users.keySet();
+			for (String i: keys) {
+				printWriter.println( i+" : "+users.get(i) );
+			}
+			printWriter.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean loadUsers() {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader("Users.txt"));
+			Scanner parser;
+			String line;
+			String addr;
+			String username;
+			while ( (line = reader.readLine()) != null) {
+				parser = new Scanner(line);
+				parser.useDelimiter(" : ");
+				addr = parser.next();
+				username = parser.next();
+				users.put(addr, username);
+				parser.close();
+			}
+			reader.close();
+			return true;
+		} catch (FileNotFoundException e) {
+			MadLibsServer.saveUsers();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

@@ -6,7 +6,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -15,18 +14,23 @@ public class MadLibsHandler implements Runnable {
 	 DataInputStream input;
 	 Socket remote_socket;
 	 String connected_user_name;
-	 HashMap<InetAddress, String> users;
+	 HashMap<String, String> users;
 	 long id;
+	 Thread server;
+	 IOException disconnectException;
 	 
 	/**
 	 * Constructor
 	 *
 	 * @param remote_socket
 	 * @param users 
+	 * @param main_thread 
 	 */
-	public MadLibsHandler(Socket remote_socket, HashMap<InetAddress, String> users) {
+	public MadLibsHandler(Socket remote_socket, HashMap<String, String> users, Thread t) {
 		this.remote_socket = remote_socket;
 		this.users = users;
+		this.server = t;
+		this.disconnectException = null;
 		try {
 			// Get input/output streams
 			this.input = new DataInputStream(remote_socket.getInputStream());
@@ -43,60 +47,78 @@ public class MadLibsHandler implements Runnable {
 	public void run() {
 		id = Thread.currentThread().getId();
 		
-		// Logging user connection
-		connected_user_name = receiveString();
-		if (users.get(remote_socket.getInetAddress()) == null)
-			users.put(remote_socket.getInetAddress(), connected_user_name);
-		System.out.printf("Thread[%d]: %s joined (ip%s)\n",
+		// Check for prior login
+		connected_user_name = users.get(remote_socket.getInetAddress().toString());
+		if (connected_user_name != null) {
+			sendString("MadLibsServer: Welcome back, "+connected_user_name+"!\n");
+		} else {
+			sendString("");
+			// Logging user connection
+			connected_user_name = receiveString();
+			if (Thread.interrupted()) {
+				disconnect(disconnectException);
+				System.out.printf("Handler%d: Exiting thread\n", id);
+				server.interrupt();
+				return;
+			}
+			if ( connected_user_name.equals("") )
+				connected_user_name = "[Unknown User]";
+				users.put(remote_socket.getInetAddress().toString(), connected_user_name);
+		}
+		
+		System.out.printf("Handler%d: %s joined (ip %s)\n",
 				id,
 				connected_user_name,
 				remote_socket.getInetAddress().toString() );
 
-		int mode;
-
-		mode = chooseMode();
-		while (mode > 0) {
+		int mode = 0;
+		int interrupt = 0;
+		do {
+			mode = chooseMode();
 			try {
 				switch (mode) {
 				case (1):
-					beginPlayMode();
+					interrupt = beginPlayMode();
 					break;
 				case (2):
-					beginCreateMode();
+					interrupt = beginCreateMode();
 					break;
 				case (3):
-					beginReadMode();
+					interrupt = beginReadMode();
 					break;
 				default:
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			mode = chooseMode();
-		}
+		} while ( (mode > 0) && (interrupt != -1) );
 
-		disconnect();
-
+		disconnect(disconnectException);
+		System.out.printf("Handler%d: Exiting thread\n", id);
+		server.interrupt();
+		return;
 	}
 
 	private int chooseMode () {
 		// Declare variables used to store client communications
-		int client_input = 1;
+		Integer client_input = 1;
+		if (Thread.interrupted()) return -1;
 
-		while ( true /*(client_input >= 0) &&  (client_input < 4)*/ ) {
+		while (!Thread.interrupted() /*(client_input >= 0) &&  (client_input < 4)*/ ) {
 			// Write the game mode options to the remote socket
 			sendString(
 					  "+-------------------+\n"
 					+ "|    Choose Mode    |\n"
-					+ "|    1) Play        |\n"
-					+ "|    2) Create      |\n"
-					+ "|    3) Read        |\n"
-					+ "|    0) Disconnect  |\n"
+					+ "|   1) Play         |\n"
+					+ "|   2) Create       |\n"
+					+ "|   3) Read         |\n"
+					+ "|   0) Disconnect   |\n"
 					+ "+-------------------+\n"
 					+ "> (int) ");
 
 			// Read int from client
 			client_input = receiveInt();
+			if (Thread.interrupted()) return -1;
 
 			// Depending on the int read, enter app mode accordingly
 			switch (client_input) {
@@ -117,45 +139,51 @@ public class MadLibsHandler implements Runnable {
 				return client_input;
 			default:
 				sendInt(1);
-				sendString("MadLibsServer: "+client_input+" is out-of-bounds.\n");
+				sendString("MadLibsServer: Integer is out-of-bounds.\n");
 			}
 		}
+		return -1;
 	}
 
 	/**
 	 * Begins running "play" mode
 	 */
 	private int beginPlayMode() {
-		String title;
+		if (Thread.interrupted()) return -1;
+		Integer number;
 		String filledBlank;
 		MadLib choice = null;
 		String blank = null;
 		sendString(MadLibSet.getMadLibList());
 		do {
-			sendString("MadLibsServer: Pick a MadLib to play (or just return to exit):\n > (String) ");
-			title = receiveString();
-			if ( title.equals("") )
+			sendString("MadLibsServer: Pick a MadLib to play (or just return to exit):\n > (int) ");	
+			number = receiveInt();
+			if (Thread.interrupted()) return -1;
+			if ( number.equals(Integer.MIN_VALUE) )
 				break;
-			choice = MadLibSet.getPlayable(title);
+			choice = MadLibSet.getPlayable(number);
 			if ( choice != null ) {
 				sendInt(choice.getNumBlanks());
 				sendString("MadLibsServer: Now playing \""+choice.getTitle()+"\"\n");
 			} else {
 				sendInt(0);
-				sendString("MadLibsServer: MadLib \""+title+"\" does not exist.\n");
+				sendString("MadLibsServer: "+number+" is out-of-bounds.\n");
 				continue;
 			}
 			sendString("MadLib: Fill in the blanks:\n");
 			while ( (blank=choice.getNextBlank()) != null ) {
 				sendString(" > ("+blank+") ");
 				filledBlank = receiveString();
+				if (Thread.interrupted()) return -1;
 				choice.fillNextBlank(filledBlank);
 			}
 			sendString("MadLibsServer: Your finished MadLib reads...\n\""+choice.getFilledMadlib()+"\"\n");
-			receiveInt();
 			MadLibSet.addCompleted(new CompletedMadLib(choice, connected_user_name));
 			MadLibSet.saveCompleted();
-		} while ( !title.equals("") );
+			receiveInt();
+			if (Thread.interrupted()) return -1;
+			
+		} while ( !(number == Integer.MIN_VALUE) );
 		
 		sendString("MadLibsServer: Exiting mode...\n");
 		return 0;
@@ -168,22 +196,22 @@ public class MadLibsHandler implements Runnable {
 		// sendString("Use %word% to show which words are the madlibs");
 		String ent = "";
 		String key = "";
-		boolean key_in_use;
+		boolean key_in_use = false;
 		do {
 			//System.out.println("Server: Top of loop");
 			sendString("MadLibsServer: Enter a new MadLib below (or just return to exit):\n > (String) ");
 			ent = receiveString();
+			if (Thread.interrupted()) return -1;
 			if ( !(ent.equals("")) ) {
 				try{
 					MadLib new_m_l = new MadLib(ent);
 					sendInt(0);
 					sendString("MadLibsServer: MadLib title?\n > (String) ");
 					key = receiveString();
+					if (Thread.interrupted()) return -1;
 					if ( !(key.equals("")) ) {
 						new_m_l.setTitle(key);
-						key_in_use = !MadLibSet.add(key, new_m_l);
-					} else {
-						key_in_use = !MadLibSet.add(null, new_m_l);
+						key_in_use = !MadLibSet.add(new_m_l);
 					}
 					if (key_in_use) {
 						sendString("MadLibsServer: Sorry, that name is already used! Upload cancelled\n");
@@ -207,12 +235,13 @@ public class MadLibsHandler implements Runnable {
 	 * Begins running "read" mode
 	 */
 	private int beginReadMode() {
-		int number;
+		Integer number;
 		String choice = null;
 		sendString(MadLibSet.getCompletedList());
 		do {
 			sendString("MadLibsServer: Pick a MadLib to read (or just return to exit):\n > (int) ");
 			number = receiveInt();
+			if (Thread.interrupted()) return -1;
 			if ( number == Integer.MIN_VALUE )
 				break;
 			choice = MadLibSet.getReadable(number);
@@ -235,17 +264,22 @@ public class MadLibsHandler implements Runnable {
 	 */
 	private void disconnect(Exception e) {
 		// Get message (disconnect) from server and print to screen
+		if (connected_user_name == null)
+			connected_user_name = "[Unknown User]";
 		if (e == null) {
 			sendString("MadLibsServer: Disconnecting...\n");
-			System.out.printf("Thread[%d]: %s disconnected gracefully\n", id, connected_user_name);
+			System.out.printf("Handler%d: %s disconnected gracefully\n", id, connected_user_name);
 		} else {
-			System.out.printf("Thread[%d]: %s lost connection\n", id, connected_user_name);
+			System.out.printf("Handler%d: %s lost connection\n", id, connected_user_name);
+		}
+		try {
+			input.close();
+			output.close();
+			remote_socket.close();
+		} catch (IOException ioe) {
+			System.out.println("MadLibsClient: Client did not disconnect gracefully");
 		}
 		return;
-	}
-	
-	private void disconnect() {
-		disconnect(null);
 	}
 
 	/**
@@ -259,7 +293,8 @@ public class MadLibsHandler implements Runnable {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			disconnect(e);
+			Thread.currentThread().interrupt();
+			disconnectException = e;
 			return 1;
 		}
 	}
@@ -275,7 +310,8 @@ public class MadLibsHandler implements Runnable {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			disconnect(e);
+			Thread.currentThread().interrupt();
+			disconnectException = e;
 			return 1;
 		}
 	}
@@ -287,10 +323,11 @@ public class MadLibsHandler implements Runnable {
 	 */
 	public Integer receiveInt() {
 		try {
-			int i = input.readInt();
+			Integer i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			disconnect(e);
+			Thread.currentThread().interrupt();
+			disconnectException = e;
 			return null;
 		}
 	}
@@ -305,7 +342,8 @@ public class MadLibsHandler implements Runnable {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			disconnect(e);
+			Thread.currentThread().interrupt();
+			disconnectException = e;
 			return null;
 		}
 	}

@@ -6,39 +6,41 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class MadLibSet {
-	private static HashMap<String, MadLib> mad = new HashMap<>();
+	//private static HashMap<String, MadLib> mad = new HashMap<>();
+	private static LinkedList<MadLib> mad = new LinkedList<>();
 	private static LinkedList<CompletedMadLib> completed = new LinkedList<>();
 	private static int units = 0;
 
 	// YAY FOR HASHMAPS
 	// what else can A set do?
 
-	public static Boolean add(String key, MadLib ent) {
+	public static Boolean add(MadLib ent) {
 		// This returns a Bool if the add was successful for now.
 		// Later this should throw an exception.
-		if (key == null) {
-			units++;
+		if (ent.getTitle().equals("")) {
 			ent.setTitle("Untitled_" + units);
-		} else {
-			ent.setTitle(key);
+			units++;
 		}
-		if (mad.containsKey(ent.getTitle())) {
-			System.out.println("Key already exists.");
-			return false;
-		} else {
-			mad.put(ent.getTitle(), ent);
-			return true;
+		for (MadLib m : mad) {
+			if (m.getTitle().equals(ent.getTitle())) {
+				System.out.println("MadLibSet: Key already exists.");
+				return false;
+			}
 		}
+		mad.addFirst(ent);
+		return true;
 	}
 	
-	public static MadLib getPlayable(String key) {
-		MadLib mlib = mad.get(key);
-		if (mlib != null) {
-			try {
-				mlib = new MadLib(mlib.getTitle(), mlib.toString());
-				return mlib;
-			} catch (BadMadLibDataException e) {
-				e.printStackTrace();
+	public static MadLib getPlayable(int number) {
+		if (number <= mad.size() && number > 0) {
+			MadLib mlib = mad.get(number-1);
+			if (mlib != null) {
+				try {
+					mlib = new MadLib(mlib.getTitle(), mlib.getRaw());
+					return mlib;
+				} catch (BadMadLibDataException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		return null;
@@ -53,14 +55,9 @@ public class MadLibSet {
 	public static void addCompleted(CompletedMadLib c){
 		completed.addFirst(c);
 	}
-	//NOT AT ALL HOW YOU WOULD DO IT
-	// public static Sting giveRandomComp(){
-	// 	ArrayList<String> strings = new ArrayList<>(fil.values());
-	// 	return strings.get((new Random()).nextInt(strings.size()));
-	// }
+	
 	public static MadLib giveRandom() {
-		ArrayList<MadLib> mads = new ArrayList<>(mad.values());
-		return mads.get((new Random()).nextInt(mads.size()));
+		return getPlayable( (int)(Math.random()*mad.size())+1 );
 	}
 
 	public static void printMadLibList(){
@@ -72,7 +69,37 @@ public class MadLibSet {
 	}
 	
 	public static String getMadLibList() {
+		String[] completedStrings = new String[mad.size()];
+		int longest = 0;
+		int i;
+		int leftover;
+		int n = 1;
+		int maxPlaces = getPlaces(mad.size());
+		for(i=0; i<completedStrings.length; i++) {
+			completedStrings[i] = mad.get(i).toString();
+			if (completedStrings[i].length() > longest)
+				longest = completedStrings[i].length();
+		}
 		String list = "";
+		list = list.concat("+----");
+		list = list.concat(appendMulti("-", maxPlaces));
+		list = list.concat(appendMulti("-", longest));
+		list = list.concat("-+\n");
+		for(String s : completedStrings) {
+			leftover = longest - s.length();
+			list = list.concat("| "+n);
+			list = list.concat(appendMulti(" ", maxPlaces - getPlaces(n)));
+			list = list.concat(" | " + s);
+			list = list.concat(appendMulti(" ", leftover));
+			list = list.concat(" |\n");
+			n++;
+		}
+		list = list.concat("+----");
+		list = list.concat(appendMulti("-", maxPlaces));
+		list = list.concat(appendMulti("-", longest));
+		list = list.concat("-+\n");
+		return list;
+		/*String list = "";
 		list = list.concat("+--------------------+\n");
 		for(String s : mad.keySet()){
 			if(s.length() > 18)
@@ -85,47 +112,65 @@ public class MadLibSet {
 			}
 		}
 		list = list.concat("+--------------------+\n");
-		return list;
+		return list;*/
 	}
 	
 	public static String getCompletedList() {
 		String[] completedStrings = new String[completed.size()];
 		int longest = 0;
 		int i;
+		int leftover;
+		int n = 1;
+		int maxPlaces = getPlaces(completed.size());
 		for(i=0; i<completedStrings.length; i++) {
 			completedStrings[i] = completed.get(i).toString();
 			if (completedStrings[i].length() > longest)
 				longest = completedStrings[i].length();
 		}
 		String list = "";
-		list = list.concat("+-----");
-		for (i=0; i<longest; i++)
-			list = list.concat("-");
+		list = list.concat("+----");
+		list = list.concat(appendMulti("-", maxPlaces));
+		list = list.concat(appendMulti("-", longest));
 		list = list.concat("-+\n");
-		int leftover;
-		int n = 1;
 		for(String s : completedStrings) {
 			leftover = longest - s.length();
-			list = list.concat("| "+n+" | " + s);
-			for (i=0; i<leftover; i++)
-				list = list.concat(" ");
+			list = list.concat("| "+n);
+			list = list.concat(appendMulti(" ", maxPlaces - getPlaces(n)));
+			list = list.concat(" | " + s);
+			list = list.concat(appendMulti(" ", leftover));
 			list = list.concat(" |\n");
 			n++;
 		}
-		list = list.concat("+-----");
-		for (i=0; i<longest; i++)
-			list = list.concat("-");
+		list = list.concat("+----");
+		list = list.concat(appendMulti("-", maxPlaces));
+		list = list.concat(appendMulti("-", longest));
 		list = list.concat("-+\n");
 		return list;
 	}
+	
+	private static String appendMulti(String s, int numberOfTimes) {
+		String result = "";
+		for (int i=0;i<numberOfTimes;i++)
+			result = result.concat(s);
+		return result;
+	}
+	
+	private static int getPlaces(int i) {
+		int n = 0;
+		while (i != 0) {
+			n++;
+			i = i/10;
+		}
+		return n;
+	}
+		
 	
 	public static boolean saveMadLibs() {
 		try {
 			PrintWriter printWriter = new PrintWriter("MadLibs.txt", "UTF-8");
 			
-			Set<String> keySet = mad.keySet();
-			for (String key : keySet) {
-				printWriter.println( key+" : "+(mad.get(key)) );
+			for (MadLib m : mad) {
+				printWriter.println( m.getTitle()+" : "+(m.getRaw()) );
 			}
 			printWriter.close();
 			return true;
@@ -174,7 +219,7 @@ public class MadLibSet {
 				//System.out.printf("key: %s, raw: %s\n", key, raw);
 				MadLib temp = new MadLib(raw);
 				temp.setTitle(key);
-				MadLibSet.add(key, temp);
+				MadLibSet.add(temp);
 				parser.close();
 			}
 			reader.close();
@@ -228,19 +273,4 @@ public class MadLibSet {
 		return false;
 	}
 
-	public static void main(String[] args) {
-		MadLib a, b, c;
-		try {
-			a = new MadLib("Why don't you love %plural noun% as much as I do?");
-			MadLibSet.add("First Key", a);
-			b = new MadLib("%noun% is good in moderation. However not enough %emotion% can kill the man.");
-			MadLibSet.add("Second Test",  b);
-			c = new MadLib("This is a %adjetive% Madlib and you love %something you hate%. 	");
-			MadLibSet.add("The third Madlib has a long title that might be too long", c);
-			MadLibSet.printMadLibList();
-		} catch (BadMadLibDataException e) {
-			e.printStackTrace();
-		}
-		
-	}
 }

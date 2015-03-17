@@ -8,21 +8,24 @@ public class MadLibsClient {
 	private Socket server_socket;
 	private Scanner sc;
 	private String user_name;
+	private IOException disconnectException;
 
 	/**
 	 * Constructor
 	 */
 	public MadLibsClient(String hostname, int port) {
+		System.out.printf("MadLibsClient: Attempting to connect to %s:%d\n", hostname, port);
 		try {
 			this.server_socket = new Socket(hostname, port);
 			// Get input/output streams
 			this.input = new DataInputStream(server_socket.getInputStream());
 			this.output = new DataOutputStream(server_socket.getOutputStream());
 			this.sc = new Scanner(System.in);
+			this.disconnectException = null;
 			
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getClass().toString());
-			System.out.println("\t" + e.getMessage());
+			System.out.println("MadLibsClient: Connection failed");
+			this.disconnectException = e;
 		}
 	}
 
@@ -33,62 +36,80 @@ public class MadLibsClient {
 	 */
 	public static void main(String[] args) {
 		// Make sure args are passed
-		if (!(args.length >= 2)) {
+		String host;
+		int portNumber;
+		String[] hostList = {"192.168.2.5", "192.168.2.6", "192.168.2.4", "192.168.2.3", "192.168.2.2", "192.168.2.1", "192.168.2.7"};
+		if ( (args.length == 1) && ((args[0].equals("help")) || (args[0].equals("usage"))) ) {
 			System.out.println("Usage:");
 			System.out.println("     java MadLibsClient hostname port");
-			System.out.println("          hostname:String");
-			System.out.println("               Use \"localhost\" to connect on loopback address");
-			System.out.println("          port:int");
+			System.out.println("          hostname : String");
+			System.out.println("          port : int");
 
 			return;
+		} else if (args.length == 2) {
+			// Get variables from args
+			host = args[0]; // Use "localhost" when testing with the server running locally
+			portNumber = Integer.parseInt(args[1]);
 		}
 
-		// Get variables from args
-		String hostName = args[0]; // Use "localhost" when testing with the server running locally
-		int portNumber = Integer.parseInt(args[1]);
-
 		// Create new MadLibClient
-		MadLibsClient client = new MadLibsClient(hostName, portNumber);
+		MadLibsClient client;
+		int i=0;
+		portNumber = 3300;
+		do {
+			host = hostList[i];
+			client = new MadLibsClient(host, portNumber);
+			i++;
+		} while ( (i < hostList.length) && (client.disconnectException != null) );
+		if (client.disconnectException != null) return;
 		
-		System.out.print("MadLibsClient: What is your name?\n > (String) ");
-		client.user_name = client.getLine();
-		client.sendString(client.user_name);
+		String message;
+		message = client.receiveString();
+		if (Thread.interrupted()) {
+			client.disconnect(client.disconnectException);
+			System.out.println("MadLibsClient: Goodbye!");
+			return;
+		}
+		if (message.equals("")) {
+			System.out.print("MadLibsClient: What is your name?\n > (String) ");
+			client.user_name = client.getLine();
+			client.sendString(client.user_name);
+		} else {
+			System.out.print(message);
+		}
+		
+		
 
 		// Declare variables used for choosing mode
-		int mode;
-
-		// Get int "mode" from the user
-		mode = client.chooseMode();
+		int mode = 0;
+		int interrupt = 0;
 
 		// Enter main loop
 		//	1) Look at int "mode"
 		//	2) If not 0, enter according mode using method call
 		//	3) If 0, exit loop
-		while (mode > 0) {
-			try {
-				switch (mode) {
-				case (1):
-					client.beginPlayMode();
-					break;
-				case (2):
-					client.beginCreateMode();
-					break;
-				case (3):
-					client.beginReadMode();
-					break;
-				default:
-					throw new Exception("Error switching modes");
-				}
-			} catch (Exception e) {
-				System.out.println("Exception: " + e.getClass().toString());
-				System.out.println("\t" + e.getMessage());
-			}
+		
+		do {
+			// Get int "mode" from the user
 			mode = client.chooseMode();
-		}
+			switch (mode) {
+			case (1):
+				interrupt = client.beginPlayMode();
+				break;
+			case (2):
+				interrupt = client.beginCreateMode();
+				break;
+			case (3):
+				interrupt = client.beginReadMode();
+				break;
+			default:
+				break;
+			}
+		} while (mode > 0 && interrupt != -1);
 
 		// Disconnect from the server
-		client.disconnect();
-
+		client.disconnect(client.disconnectException);
+		System.out.println("MadLibsClient: Goodbye!");
 	}
 
 	/**
@@ -98,13 +119,14 @@ public class MadLibsClient {
 	 * @return int
 	 */
 	private int chooseMode() {
-		int mode_int = 1;
-		int check = 1;
+		Integer mode_int = 1;
+		Integer check = 1;
 		String message;
 
 		while ( check == 1 ) { // While the client hasn't chosen the disconnect option
 			// Get message (game mode options) from server and print to screen
 			message = receiveString();
+			if (Thread.interrupted()) return -1;
 			System.out.print(message);
 
 			// Get int from the user (mode choice)
@@ -113,77 +135,100 @@ public class MadLibsClient {
 
 			// Check that the mode option is a valid choice
 			if ( (check=receiveInt()) == 0 ) {
+				if (Thread.interrupted()) return -1;
 				// NOTE: All checks are done on the server.
 				//	     If a bad argument is sent, then "check" (an int read from the server) will not be 0
 
 				// Get message (game mode confirmation) from server and print to screen
-				if (mode_int != 0)
-					System.out.print(receiveString());
-
+				if (mode_int != 0) {
+					message = receiveString();
+					if (Thread.interrupted()) return -1;
+					System.out.print(message);
+				}
 				// Return chosen mode to the main loop
 				return mode_int;
 				// Exit this loop
 			} else {
 				// Get message ("that mode doesn't exist") from the server and print to screen
 				message = receiveString();
+				if (Thread.interrupted()) return -1;
 				System.out.print(message);
 			}
 		}
-		// Not supposed to get here
 		return -1;
 	}
 
 	/**
 	 * Begins running "play" mode
 	 */
-	private void beginPlayMode () {
-		String line;
-		int check = 0;
-		System.out.print(receiveString());
+	private int beginPlayMode () {
+		Integer number;
+		String message, line;
+		Integer check = 0;
+		message = receiveString();
+		if (Thread.interrupted()) return -1;
+		System.out.print(message);
 		do {
-			System.out.print(receiveString());
-			line = getLine();
-			sendString(line);
-			if (line.equals(""))
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
+			number = getInt();
+			sendInt(number);
+			if (number == Integer.MIN_VALUE)
 				break;
 			check = receiveInt();
-			//System.out.println("Check: "+check);
-			System.out.print(receiveString());
+			if (Thread.interrupted()) return -1;
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			
 			if (check == 0)
 				continue;
 			
-			System.out.print(receiveString());
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			for (int i=0; i<check; i++) {
-				System.out.print(receiveString());
+				message = receiveString();
+				if (Thread.interrupted()) return -1;
+				System.out.print(message);
 				line = getLine();
-				//System.out.println();
 				sendString(line);
 			}
 			// Read the fininished MadLib
-			System.out.print(receiveString());
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			getLine();
 			sendInt(0);
 			
-		} while ( !line.equals("") || (check == 0) );
+		} while ( !(number == Integer.MIN_VALUE) || (check == 0) );
 		
 		// Get message (exiting mode confirmation) from server and print to screen
-		System.out.print(receiveString());
+		message = receiveString();
+		if (Thread.interrupted()) return -1;
+		System.out.print(message);
+		return 0;
 	}
 
 	/**
 	 * Begins running "create" mode
 	 */
-	private void beginCreateMode () {
-		String madLib;
-		int check = 1;
+	private int beginCreateMode () {
+		String madLib, message;
+		Integer check = 1;
 		do {
-			System.out.print(receiveString());
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			madLib = getLine();
 			sendString(madLib);
 			if ( !madLib.equals("") ) {
 				check = receiveInt();
-				System.out.print(receiveString());
+				if (Thread.interrupted()) return -1;
+				message = receiveString();
+				if (Thread.interrupted()) return -1;
+				System.out.print(message);
 				if (check == 1)
 					continue;
 			} else {
@@ -193,49 +238,73 @@ public class MadLibsClient {
 				String name = getLine();
 				sendString(name);
 			}
-			System.out.print(receiveString());
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 		} while (!madLib.equals("") || check == 1);
 		
-		System.out.print(receiveString());
+		message = receiveString();
+		if (Thread.interrupted()) return -1;
+		System.out.print(message);
+		return 0;
 	}
 
 	/**
 	 * Begins running "read" mode
 	 */
-	private void beginReadMode () {
-		int line;
-		int check = 0;
-		System.out.print(receiveString());
+	private int beginReadMode () {
+		Integer line;
+		Integer check = 0;
+		String message;
+		message = receiveString();
+		if (Thread.interrupted()) return -1;
+		System.out.print(message);
 		do {
-			System.out.print(receiveString());
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			line = getInt();
 			sendInt(line);
 			if (line == Integer.MIN_VALUE)
 				break;
 			check = receiveInt();
-			System.out.print(receiveString());
+			if (Thread.interrupted()) return -1;
+			message = receiveString();
+			if (Thread.interrupted()) return -1;
+			System.out.print(message);
 			if (check == 1)
 				continue;
 		} while ( !(line == Integer.MIN_VALUE) );
 		
 		// Get message (exiting mode confirmation) from server and print to screen
-		System.out.print(receiveString());
+		message = receiveString();
+		if (Thread.interrupted()) return -1;
+		System.out.print(message);
+		return 0;
 	}
 
 	/**
 	 * Disconnects the server from the client, and cleans up
 	 */
-	private void disconnect(boolean causedByException) {
+	private void disconnect(IOException disconnectException) {
 		// Get message (disconnect) from server and print to screen
-		if (!causedByException) {
-			System.out.print(receiveString());
+		String message;
+		if (disconnectException == null) {
+			message = receiveString();
+			if (Thread.interrupted()) return;
+			System.out.print(message);
 		} else {
-			System.out.println("Connection lost");
+			System.out.println("MadLibsClient: Connection lost");
 		}
+		try {
+			input.close();
+			output.close();
+			server_socket.close();
+		} catch (IOException e) {
+			System.out.println("MadLibsClient: Client did not disconnect gracefully");
+		}
+		
 		return;
-	}
-	private void disconnect() {
-		disconnect(false);
 	}
 
 	/**
@@ -249,7 +318,8 @@ public class MadLibsClient {
 			output.writeUTF(s);
 			return 0;
 		} catch (IOException e) {
-			disconnect(true);
+			disconnectException = e;
+			Thread.currentThread().interrupt();
 			return 1;
 		}
 	}
@@ -265,7 +335,8 @@ public class MadLibsClient {
 			output.writeInt(i);
 			return 0;
 		} catch (IOException e) {
-			disconnect(true);
+			disconnectException = e;
+			Thread.currentThread().interrupt();
 			return 1;
 		}
 	}
@@ -280,7 +351,8 @@ public class MadLibsClient {
 			int i = input.readInt();
 			return i;
 		} catch (IOException e) {
-			disconnect(true);
+			disconnectException = e;
+			Thread.currentThread().interrupt();
 			return null;
 		}
 	}
@@ -295,7 +367,8 @@ public class MadLibsClient {
 			String s = input.readUTF();
 			return s;
 		} catch (IOException e) {
-			disconnect(true);
+			disconnectException = e;
+			Thread.currentThread().interrupt();
 			return null;
 		}
 	}
@@ -316,7 +389,7 @@ public class MadLibsClient {
 				if (line.equals("")) {
 					return Integer.MIN_VALUE;
 				} else {
-					System.out.println("MadLibsClient: Can't parse\" "+line+"\" to integer");
+					System.out.println("MadLibsClient: Can't parse \""+line+"\" to integer");
 					System.out.print(" > (int) ");
 				}
 			}
